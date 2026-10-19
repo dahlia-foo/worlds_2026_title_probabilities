@@ -15,18 +15,24 @@ worlds/
   config.py     paths, LEAGUE_NAMES, EVENT_LEAGUES, region map, load_config()
   db.py         SQLite connect / write_table (adds indexes) / read
   load.py       step `data`: OE CSVs -> SQLite
+  champions.py  step `champs`: champion stats, Fearless usage, team pools/signatures + charts
+  plots.py      matplotlib style; colors = dataviz skill reference palette (light mode)
 tests/          pytest, synthetic fixtures only
 config/worlds2026.yaml   teams (oe_name = exact OE teamname), Swiss rules, round1, results, settings
 data/raw/       *_oe.csv (gitignored)    data/processed/worlds.db (gitignored)
 outputs/        charts and CSVs
+notes/          one human-readable report per finished step (01-data.md, 02-champions.md, ...)
 ```
+
+After finishing a step, add `notes/0N-<step>.md`. Write it as a short project report: what was done, the decisions made, the key findings with real numbers, and the checks run. Link charts as `../outputs/*.png`.
 
 ## Steps
 | step   | module          | output |
 |--------|-----------------|--------|
 | `data` | `worlds/load.py` | `games`, `series`, `team_games`, `player_games`, `teams` tables |
+| `champs` | `worlds/champions.py` | `champ_stats`, `champ_fearless`, `team_pools`, `team_signatures` tables; `outputs/presence_top.png`, `fearless_game_number.png`, `team_pool_depth.png`, `signature_champs.png` |
 
-Planned: `champs` (champion analysis), `model` (Elo + LR/XGBoost with a Worlds 2025 backtest), `sim` (Swiss + knockout Monte Carlo), and `all` (runs every step).
+Planned: `model` (Elo + LR/XGBoost with a Worlds 2025 backtest) and `sim` (Swiss + knockout Monte Carlo). `all` runs every registered step.
 
 ## Data notes (step `data`)
 - OE has 12 rows per game: 10 players and 2 `position=="team"` rows. Games that don't match this shape are dropped.
@@ -40,6 +46,14 @@ Planned: `champs` (champion analysis), `model` (Elo + LR/XGBoost with a Worlds 2
 - **Series:** OE has no series id. A series is grouped by league and unordered team pair, and a new one starts when OE's `game` number doesn't increase or there is a gap of 18h or more.
   - `game_in_series` = OE's `game` when it reads 1..n; otherwise date order is used. That fallback covers about 0.4% of series, which are missing games in OE.
   - `series.best_of` is inferred from the winner's game count.
+
+## Champion notes (step `champs`)
+- **Scope:** major leagues (config `major_leagues`), cross-region event games and Worlds main-event games, on the last `recent_patches` patches (sorted by `patch_key`).
+- **Presence** = (games picked + games banned) / games. A win rate is shown at ≥5 picks, with a Wilson CI.
+- **Fearless:** 2026 major-league Bo3/Bo5 series never repeat a champion, for either team, so this is hard Fearless. The heatmap shows each champion's pick rate by game number over the last 6 patches; games 4–5 are rare.
+- **Team pools** cover the last 6 months, all leagues.
+  - Effective pool = exp(entropy) of picks per role. It rises with games played.
+  - Signature champions = top excess pick rate (team rate − global rate for the same role), with ≥3 picks and shrunk lift ≥1.5.
 
 ## Tests
 `.venv/bin/python -m pytest -q`

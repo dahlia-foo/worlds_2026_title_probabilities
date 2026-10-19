@@ -3,7 +3,7 @@ import argparse
 import importlib
 import logging
 
-STEPS = {"data": "worlds.load"}
+STEPS = {"data": "worlds.load", "champs": "worlds.champions"}
 
 
 def main() -> None:
