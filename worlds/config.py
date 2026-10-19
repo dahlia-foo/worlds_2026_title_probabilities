@@ -25,11 +25,12 @@ LEAGUE_NAMES = {
     "WLRQ": "Worlds LPL Regional Qualifier",
     "KeSPA Cup": "KeSPA Cup",
     "LTA": "LTA Championship",
+    "EM": "European Masters",
 }
 
 # Leagues ignored when deciding a team's home league: events, cups and cross-region finals.
 EVENT_LEAGUES = {"WLDs", "MSI", "FST", "EWC", "DCGI", "DCup", "ASI", "AC", "WSCI",
-                 "KeSPA Cup", "LTA"}
+                 "KeSPA Cup", "LTA", "EM"}
 
 # Domestic league -> region. 2025's LTA conferences became LCS / CBLOL in 2026.
 REGION_OF_LEAGUE = {"LTA N": "LCS", "LTA S": "CBLOL"}

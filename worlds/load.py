@@ -75,7 +75,9 @@ def _assign_series(games: pd.DataFrame) -> pd.DataFrame:
     g["pair"] = [" | ".join(sorted(p)) for p in zip(g.blue_teamid, g.red_teamid)]
     grp = g.groupby(["league", "pair"], sort=False)
     new = (grp.game.diff().fillna(-1) <= 0) | (grp.date.diff().fillna(SERIES_GAP) >= SERIES_GAP)
-    g["series_id"] = new.cumsum()
+    # Number series within each league + pair (a global cumsum would merge interleaved series).
+    g["_k"] = new.groupby([g.league, g.pair], sort=False).cumsum()
+    g["series_id"] = g.groupby(["league", "pair", "_k"], sort=False).ngroup()
 
     # Use OE's game number where it's 1..n within the series; otherwise fall back to date order.
     order = g.groupby("series_id").cumcount() + 1
@@ -84,7 +86,7 @@ def _assign_series(games: pd.DataFrame) -> pd.DataFrame:
     n_bad = g.loc[~reliable, "series_id"].nunique()
     log.info("series: %d total, %d with unreliable OE game numbers (date order used)",
              g.series_id.nunique(), n_bad)
-    return g.drop(columns="pair")
+    return g.drop(columns=["pair", "_k"])
 
 
 def _series_table(games: pd.DataFrame) -> pd.DataFrame:
@@ -120,7 +122,8 @@ def clean(raw: pd.DataFrame, worlds_start: dict) -> dict[str, pd.DataFrame]:
     games["league_name"] = games.league.map(LEAGUE_NAMES).fillna(games.league)
     games["patch_key"] = games.patch.astype(float)
 
-    # International = teams from different regions. WLDs before the main event = regional qualifiers.
+    # International = event league + teams from different regions.
+    # WLDs before the main event = regional qualifiers.
     start = games.year.map(worlds_start)
     games["stage"] = None
     games.loc[(games.league == "WLDs") & (games.date < start), "stage"] = "qualifier"
@@ -129,7 +132,7 @@ def clean(raw: pd.DataFrame, worlds_start: dict) -> dict[str, pd.DataFrame]:
     rr = pd.Series(list(zip(games.red_teamid, games.year))).map(region)
     games["blue_region"], games["red_region"] = rb.values, rr.values
     games["is_international"] = (rb.notna() & rr.notna() & (rb != rr)).values & \
-        (games.stage.fillna("") != "qualifier")
+        games.league.isin(EVENT_LEAGUES) & (games.stage.fillna("") != "qualifier")
     games = _assign_series(games)
     series = _series_table(games)
 
