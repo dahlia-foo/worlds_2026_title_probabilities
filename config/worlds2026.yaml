@@ -1,0 +1,55 @@
+# Worlds 2026 tournament state. Edit this file as results come in, then rerun the sim.
+# oe_name = exact team name as it appears in Oracle's Elixir data.
+# Source: Swiss Round 1 draw, Oct 18 2026 (Sheep Esports, Dot Esports).
+
+teams:
+  - {name: Gen.G,               oe_name: "Gen.G",               region: LCK,   seed: 1}
+  - {name: Hanwha Life Esports, oe_name: "Hanwha Life Esports", region: LCK,   seed: 2}
+  - {name: T1,                  oe_name: "T1",                  region: LCK,   seed: 3}
+  - {name: Dplus KIA,           oe_name: "Dplus Kia",           region: LCK,   seed: 4}
+  - {name: Anyone's Legend,     oe_name: "Anyone's Legend",     region: LPL,   seed: 1}
+  - {name: Bilibili Gaming,     oe_name: "Bilibili Gaming",     region: LPL,   seed: 2}
+  - {name: Top Esports,         oe_name: "Top Esports",         region: LPL,   seed: 3}
+  - {name: Invictus Gaming,     oe_name: "Invictus Gaming",     region: LPL,   seed: 4}
+  - {name: G2 Esports,          oe_name: "G2 Esports",          region: LEC,   seed: 1}
+  - {name: Movistar KOI,        oe_name: "Movistar KOI",        region: LEC,   seed: 2}
+  - {name: Karmine Corp,        oe_name: "Karmine Corp",        region: LEC,   seed: 3}   # Play-In winner
+  - {name: Team Liquid,         oe_name: "Team Liquid",         region: LCS,   seed: 1}
+  - {name: LYON,                oe_name: "LYON",                region: LCS,   seed: 2}
+  - {name: Team Secret Whales,  oe_name: "Team Secret Whales",  region: LCP,   seed: 1}
+  - {name: CTBC Flying Oyster,  oe_name: "CTBC Flying Oyster",  region: LCP,   seed: 2}
+  - {name: LOS,                 oe_name: "LØS",                 region: CBLOL, seed: 1}
+
+swiss:
+  wins_to_advance: 3
+  losses_to_eliminate: 3
+  bo1_rounds: [1, 2]          # confirmed. Later rounds assumed Bo3 (verify on lolesports.com)
+  no_rematches: true
+  same_region_allowed_from_round: 2
+
+knockout:
+  size: 8
+  format: bo5
+  # QF draw: each 3-0 team faces a 3-2 team, 3-0 teams on opposite sides of the bracket
+
+round1:
+  - [Gen.G, Invictus Gaming]
+  - [Team Liquid, CTBC Flying Oyster]
+  - [Anyone's Legend, Karmine Corp]
+  - [G2 Esports, Dplus KIA]
+  - [Hanwha Life Esports, Top Esports]
+  - [LOS, T1]
+  - [Team Secret Whales, LYON]
+  - [Bilibili Gaming, Movistar KOI]
+
+# Fill in as Swiss matches finish (Swiss starts Oct 23). The sim conditions on these.
+# Example: - {round: 1, winner: Gen.G, loser: Invictus Gaming, score: "1-0"}
+results: []
+
+# --- pipeline settings (added) ---
+recent_patches: 3
+major_leagues: [LCK, LPL, LEC, LCS, CBLOL, LCP]
+worlds_start: {2025: 2025-10-14, 2026: 2026-10-15}   # WLDs rows before this are regional qualifiers
+season_regression: 0.5    # share of team Elo regressed to region mean at the start of a new season
+n_sims: 10000
+seed: 2026
