@@ -17,6 +17,9 @@ worlds/
   load.py       step `data`: OE CSVs -> SQLite
   champions.py  step `champs`: champion stats, Fearless usage, team pools/signatures + charts
   plots.py      matplotlib style; colors = dataviz skill reference palette (light mode)
+  features.py   one chronological pass: pre-game team features per game + final team state
+  model.py      step `model`: Elo tuning, Worlds 2025 backtest, final model -> model.joblib
+  series.py     game p -> Bo1/Bo3/Bo5 series p (independent games)
 tests/          pytest, synthetic fixtures only
 config/worlds2026.yaml   teams (oe_name = exact OE teamname), Swiss rules, round1, results, settings
 data/raw/       *_oe.csv (gitignored)    data/processed/worlds.db (gitignored)
@@ -32,7 +35,9 @@ After finishing a step, add `notes/0N-<step>.md`. Write it as a short project re
 | `data` | `worlds/load.py` | `games`, `series`, `team_games`, `player_games`, `teams` tables |
 | `champs` | `worlds/champions.py` | `champ_stats`, `champ_fearless`, `team_pools`, `team_signatures` tables; `outputs/presence_top.png`, `fearless_game_number.png`, `team_pool_depth.png`, `signature_champs.png` |
 
-Planned: `model` (Elo + LR/XGBoost with a Worlds 2025 backtest) and `sim` (Swiss + knockout Monte Carlo). `all` runs every registered step.
+| `model` | `worlds/model.py` | `data/processed/model.joblib`, plus the `team_state`, `game_features` and `backtest_results` tables; `outputs/backtest_calibration.png`, `elo_worlds_teams.png` |
+
+Planned: `sim` (Swiss + knockout Monte Carlo). `all` runs every registered step.
 
 ## Data notes (step `data`)
 - OE has 12 rows per game: 10 players and 2 `position=="team"` rows. Games that don't match this shape are dropped.
@@ -54,6 +59,14 @@ Planned: `model` (Elo + LR/XGBoost with a Worlds 2025 backtest) and `sim` (Swiss
 - **Team pools** cover the last 6 months, all leagues.
   - Effective pool = exp(entropy) of picks per role. It rises with games played.
   - Signature champions = top excess pick rate (team rate − global rate for the same role), with ≥3 picks and shrunk lift ≥1.5.
+
+## Model notes (step `model`)
+- **Elo** = team component + region offset, on the 400-point scale. Region offsets move only on `is_international` games outside `OFFSET_EXCLUDE_LEAGUES` (EM, WSCI); those events link minor regions only to each other.
+- **Season regression** at the year boundary: each team component is regressed toward its region mean by `season_regression`, and region offsets shrink by a quarter of that amount.
+- K and region K are tuned on games before the cutoff only.
+- **Training data** are major-league and cross-region games from 2025-03-01 on (`_scope`), with every game mirrored so both team orderings appear. `GameModel.predict` enforces p(A,B) = 1 − p(B,A).
+- **Backtest:** Worlds 2025 main-event games, scored with each team's state frozen at the cutoff (`build(until=cutoff)`).
+- **Step 4 entry point:** `model.load_predictor()` returns `{model, state, ...}`. `model.predict_neutral(model, state, a_ids, b_ids)` gives the single-game probability averaged over sides.
 
 ## Tests
 `.venv/bin/python -m pytest -q`

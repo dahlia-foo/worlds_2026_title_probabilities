@@ -32,6 +32,10 @@ LEAGUE_NAMES = {
 EVENT_LEAGUES = {"WLDs", "MSI", "FST", "EWC", "DCGI", "DCup", "ASI", "AC", "WSCI",
                  "KeSPA Cup", "LTA", "EM"}
 
+# Cross-region events between minor regions only (ERLs, academies). They link minor regions to
+# each other but never to the majors, so they don't move region offsets.
+OFFSET_EXCLUDE_LEAGUES = {"EM", "WSCI"}
+
 # Domestic league -> region. 2025's LTA conferences became LCS / CBLOL in 2026.
 REGION_OF_LEAGUE = {"LTA N": "LCS", "LTA S": "CBLOL"}
 
