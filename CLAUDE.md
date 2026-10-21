@@ -20,6 +20,7 @@ worlds/
   features.py   one chronological pass: pre-game team features per game + final team state
   model.py      step `model`: Elo tuning, Worlds 2025 backtest, final model -> model.joblib
   series.py     game p -> Bo1/Bo3/Bo5 series p (independent games)
+  swiss.py      step `swiss`: Swiss-stage Monte Carlo, conditioned on config results
 tests/          pytest, synthetic fixtures only
 config/worlds2026.yaml   teams (oe_name = exact OE teamname), Swiss rules, round1, results, settings
 data/raw/       *_oe.csv (gitignored)    data/processed/worlds.db (gitignored)
@@ -34,10 +35,11 @@ After finishing a step, add `notes/0N-<step>.md`. Write it as a short project re
 |--------|-----------------|--------|
 | `data` | `worlds/load.py` | `games`, `series`, `team_games`, `player_games`, `teams` tables |
 | `champs` | `worlds/champions.py` | `champ_stats`, `champ_fearless`, `team_pools`, `team_signatures` tables; `outputs/presence_top.png`, `fearless_game_number.png`, `team_pool_depth.png`, `signature_champs.png` |
-
 | `model` | `worlds/model.py` | `data/processed/model.joblib`, plus the `team_state`, `game_features` and `backtest_results` tables; `outputs/backtest_calibration.png`, `elo_worlds_teams.png` |
 
-Planned: `sim` (Swiss + knockout Monte Carlo). `all` runs every registered step.
+| `swiss` | `worlds/swiss.py` | `swiss_summary` and `swiss_sims` tables; `outputs/swiss_results.csv`, `swiss_records.png` |
+
+Planned: Step 5, `knockout [--fixed]`. Chained mode reads each simulation's Swiss outcome from `swiss_sims` and produces title odds. Fixed mode reads the real quarterfinal matchups from a config `knockout.bracket` section. `all` runs every registered step.
 
 ## Data notes (step `data`)
 - OE has 12 rows per game: 10 players and 2 `position=="team"` rows. Games that don't match this shape are dropped.
@@ -67,6 +69,13 @@ Planned: `sim` (Swiss + knockout Monte Carlo). `all` runs every registered step.
 - **Training data** are major-league and cross-region games from 2025-03-01 on (`_scope`), with every game mirrored so both team orderings appear. `GameModel.predict` enforces p(A,B) = 1 − p(B,A).
 - **Backtest:** Worlds 2025 main-event games, scored with each team's state frozen at the cutoff (`build(until=cutoff)`).
 - **Step 4 entry point:** `model.load_predictor()` returns `{model, state, ...}`. `model.predict_neutral(model, state, a_ids, b_ids)` gives the single-game probability averaged over sides.
+
+## Swiss notes (step `swiss`)
+- `simulate_swiss()` is pure: no database access, it takes a probability matrix. `game_prob_matrix()` builds that matrix from the saved model.
+- **Pairing:** round 1 uses `round1`. Later rounds draw random pairs within each W-L group, with no rematches, and no same-region pairs before `same_region_allowed_from_round`. Constraints are relaxed in order only if a group can't otherwise be paired.
+- **Match format:** rounds in `bo1_rounds` are Bo1; all later rounds are Bo3.
+- **Results:** config `results` fix those pairs and winners. `validate_results()` rejects results for round r unless every match of earlier rounds is entered, and also rejects unknown teams, records that don't match, or a round-1 result that isn't a `round1` pair.
+- **Saved runs:** `swiss_sims` has one row per (sim, team) with wins, losses and the ordered opponents (comma-joined). The chained knockout step reads these.
 
 ## Tests
 `.venv/bin/python -m pytest -q`

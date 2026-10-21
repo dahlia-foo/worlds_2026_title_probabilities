@@ -4,7 +4,7 @@ import importlib
 import logging
 
 STEPS = {"data": "worlds.load", "champs": "worlds.champions",
-         "model": "worlds.model"}
+         "model": "worlds.model", "swiss": "worlds.swiss"}
 
 
 def main() -> None:
