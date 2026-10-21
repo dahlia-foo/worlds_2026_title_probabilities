@@ -4,7 +4,7 @@ from collections import Counter
 import numpy as np
 import pytest
 
-from worlds.swiss import simulate_swiss, validate_results
+from worlds.swiss import best_of, simulate_swiss, validate_results
 
 RULES = {"wins_to_advance": 3, "losses_to_eliminate": 3, "bo1_rounds": [1, 2],
          "no_rematches": True, "same_region_allowed_from_round": 2}
@@ -35,6 +35,14 @@ def test_swiss_invariants():
         for i, o in enumerate(opps[s]):
             assert len(o) == wins[s, i] + losses[s, i] <= 5
             assert len(set(o)) == len(o)                     # no rematches
+
+
+def test_best_of_rules():
+    assert best_of(1, 0, 0, RULES) == 1 and best_of(2, 1, 0, RULES) == 1   # Bo1 rounds
+    assert best_of(3, 2, 0, RULES) == 3 and best_of(3, 0, 2, RULES) == 3   # advance / eliminate
+    assert best_of(3, 1, 1, RULES) == 1                                    # 1-1 stays Bo1
+    assert best_of(4, 2, 1, RULES) == 3 and best_of(4, 1, 2, RULES) == 3
+    assert best_of(5, 2, 2, RULES) == 3
 
 
 def test_deterministic_with_certain_outcomes():

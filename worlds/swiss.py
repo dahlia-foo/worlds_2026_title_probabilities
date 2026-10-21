@@ -5,6 +5,9 @@ config `round1` draw; later rounds draw random pairs within each W-L group, avoi
 (and same-region pairs before `same_region_allowed_from_round`). Known `results` are applied as
 played: those pairs and winners are fixed, and the rest of each group is drawn at random.
 
+Match format: rounds in `bo1_rounds` are Bo1. After that, matches that can decide advancement or
+elimination are Bo3, and the rest stay Bo1 (in practice only the round-3 1-1 group).
+
 Outputs: outputs/swiss_results.csv, outputs/swiss_records.png, and SQLite tables
 swiss_summary (per team) and swiss_sims (per simulation run, for the chained knockout step).
 """
@@ -77,6 +80,14 @@ def validate_results(names: list[str], round1: list, results: list[dict], rules:
 
 # ---------- simulation ----------
 
+def best_of(rnd: int, w: int, l: int, rules: dict) -> int:
+    """Match format for two teams on record w-l in round rnd."""
+    if rnd in set(rules.get("bo1_rounds", [])):
+        return 1
+    decisive = w == rules["wins_to_advance"] - 1 or l == rules["losses_to_eliminate"] - 1
+    return 3 if decisive else 1
+
+
 def _pair(pool: list[int], played: set, region: list[str], allow_same_region: bool,
           rng: np.random.Generator) -> list[tuple[int, int]]:
     """Random pairing of an even pool. Tries hard constraints first, then relaxes them."""
@@ -117,7 +128,6 @@ def simulate_swiss(names, region, round1, results_by_round, p_game, rules, n_sim
     idx = {nm: i for i, nm in enumerate(names)}
     r1_pairs = [(idx[a], idx[b]) for a, b in round1]
     need_w, need_l = rules["wins_to_advance"], rules["losses_to_eliminate"]
-    bo1 = set(rules.get("bo1_rounds", []))
     region_from = rules.get("same_region_allowed_from_round", 1)
     p_by_bo = {1: p_game, 3: p_series(p_game, 3), 5: p_series(p_game, 5)}
 
@@ -145,11 +155,11 @@ def simulate_swiss(names, region, round1, results_by_round, p_game, rules, n_sim
                         pools.setdefault((w[i], l[i]), []).append(i)
                 for pool in pools.values():
                     pairs += _pair(pool, played, region, rnd >= region_from, rng)
-            p = p_by_bo[1 if rnd in bo1 else 3]
             for a, b in pairs:
                 key = frozenset((a, b))
                 winner = fixed.get(key)
                 if winner is None:
+                    p = p_by_bo[best_of(rnd, w[a], l[a], rules)]
                     winner = a if rng.random() < p[a, b] else b
                 loser = b if winner == a else a
                 w[winner] += 1

@@ -39,7 +39,15 @@ After finishing a step, add `notes/0N-<step>.md`. Write it as a short project re
 
 | `swiss` | `worlds/swiss.py` | `swiss_summary` and `swiss_sims` tables; `outputs/swiss_results.csv`, `swiss_records.png` |
 
-Planned: Step 5, `knockout [--fixed]`. Chained mode reads each simulation's Swiss outcome from `swiss_sims` and produces title odds. Fixed mode reads the real quarterfinal matchups from a config `knockout.bracket` section. `all` runs every registered step.
+`all` runs every registered step.
+
+### Planned: Step 5, `python -m worlds knockout [--fixed]`
+The user plans to come back to this after the Swiss stage ends and run it with the real 8 teams. All matches are Bo5.
+- **Chained** (default): for each run in `swiss_sims`, draw a quarterfinal bracket from the Swiss records, simulate it, and output title odds. Quarterfinal draw rules, confirmed by the user:
+  - The two 3-0 teams are placed in opposite halves of the bracket, and each faces a 3-2 team.
+  - One 3-1 team, drawn at random, faces the remaining 3-2 team. The other two 3-1 teams face each other.
+  - Same-region matchups are allowed, and so are rematches of Swiss games.
+- **Fixed** (`--fixed`): read the real quarterfinals from config `knockout.bracket: [[A, B], [C, D], [E, F], [G, H]]`, given in bracket order. The winners of pairs 1 and 2 meet in one semifinal, and the winners of pairs 3 and 4 in the other. The user approved this format.
 
 ## Data notes (step `data`)
 - OE has 12 rows per game: 10 players and 2 `position=="team"` rows. Games that don't match this shape are dropped.
@@ -73,7 +81,8 @@ Planned: Step 5, `knockout [--fixed]`. Chained mode reads each simulation's Swis
 ## Swiss notes (step `swiss`)
 - `simulate_swiss()` is pure: no database access, it takes a probability matrix. `game_prob_matrix()` builds that matrix from the saved model.
 - **Pairing:** round 1 uses `round1`. Later rounds draw random pairs within each W-L group, with no rematches, and no same-region pairs before `same_region_allowed_from_round`. Constraints are relaxed in order only if a group can't otherwise be paired.
-- **Match format:** rounds in `bo1_rounds` are Bo1; all later rounds are Bo3.
+- **Match format** (`best_of()`, confirmed by the user): rounds in `bo1_rounds` are Bo1. After that, a match is Bo3 only if it can decide advancement or elimination (either team at 2 wins or 2 losses). The round-3 1-1 group stays Bo1. The config comment "later rounds assumed Bo3" predates this confirmation.
+- **Round draws are random by design.** The sim forecasts the Swiss stage before it's played. If live mid-Swiss forecasting is wanted later, add it as a separate step (e.g. a config `draws:` section for announced but unplayed pairings).
 - **Results:** config `results` fix those pairs and winners. `validate_results()` rejects results for round r unless every match of earlier rounds is entered, and also rejects unknown teams, records that don't match, or a round-1 result that isn't a `round1` pair.
 - **Saved runs:** `swiss_sims` has one row per (sim, team) with wins, losses and the ordered opponents (comma-joined). The chained knockout step reads these.
 
