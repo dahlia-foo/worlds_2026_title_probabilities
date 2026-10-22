@@ -21,6 +21,7 @@ worlds/
   model.py      step `model`: Elo tuning, Worlds 2025 backtest, final model -> model.joblib
   series.py     game p -> Bo1/Bo3/Bo5 series p (independent games)
   swiss.py      step `swiss`: Swiss-stage Monte Carlo, conditioned on config results
+  knockout.py   step `knockout`: 8-team Bo5 bracket Monte Carlo (chained from swiss_sims, or fixed)
 tests/          pytest, synthetic fixtures only
 config/worlds2026.yaml   teams (oe_name = exact OE teamname), Swiss rules, round1, results, settings
 data/raw/       *_oe.csv (gitignored)    data/processed/worlds.db (gitignored)
@@ -36,18 +37,10 @@ After finishing a step, add `notes/0N-<step>.md`. Write it as a short project re
 | `data` | `worlds/load.py` | `games`, `series`, `team_games`, `player_games`, `teams` tables |
 | `champs` | `worlds/champions.py` | `champ_stats`, `champ_fearless`, `team_pools`, `team_signatures` tables; `outputs/presence_top.png`, `fearless_game_number.png`, `team_pool_depth.png`, `signature_champs.png` |
 | `model` | `worlds/model.py` | `data/processed/model.joblib`, plus the `team_state`, `game_features` and `backtest_results` tables; `outputs/backtest_calibration.png`, `elo_worlds_teams.png` |
-
 | `swiss` | `worlds/swiss.py` | `swiss_summary` and `swiss_sims` tables; `outputs/swiss_results.csv`, `swiss_records.png` |
+| `knockout [--fixed]` | `worlds/knockout.py` | `knockout_summary` table; `outputs/sim_results.csv` (P(knockout), P(semis), P(final), P(title)), `title_odds.png` |
 
-`all` runs every registered step.
-
-### Planned: Step 5, `python -m worlds knockout [--fixed]`
-The user plans to come back to this after the Swiss stage ends and run it with the real 8 teams. All matches are Bo5.
-- **Chained** (default): for each run in `swiss_sims`, draw a quarterfinal bracket from the Swiss records, simulate it, and output title odds. Quarterfinal draw rules, confirmed by the user:
-  - The two 3-0 teams are placed in opposite halves of the bracket, and each faces a 3-2 team.
-  - One 3-1 team, drawn at random, faces the remaining 3-2 team. The other two 3-1 teams face each other.
-  - Same-region matchups are allowed, and so are rematches of Swiss games.
-- **Fixed** (`--fixed`): read the real quarterfinals from config `knockout.bracket: [[A, B], [C, D], [E, F], [G, H]]`, given in bracket order. The winners of pairs 1 and 2 meet in one semifinal, and the winners of pairs 3 and 4 in the other. The user approved this format.
+`all` runs every registered step. In `all`, knockout runs in chained mode. `--fixed` is accepted only with `knockout`.
 
 ## Data notes (step `data`)
 - OE has 12 rows per game: 10 players and 2 `position=="team"` rows. Games that don't match this shape are dropped.
@@ -85,6 +78,17 @@ The user plans to come back to this after the Swiss stage ends and run it with t
 - **Round draws are random by design.** The sim forecasts the Swiss stage before it's played. If live mid-Swiss forecasting is wanted later, add it as a separate step (e.g. a config `draws:` section for announced but unplayed pairings).
 - **Results:** config `results` fix those pairs and winners. `validate_results()` rejects results for round r unless every match of earlier rounds is entered, and also rejects unknown teams, records that don't match, or a round-1 result that isn't a `round1` pair.
 - **Saved runs:** `swiss_sims` has one row per (sim, team) with wins, losses and the ordered opponents (comma-joined). The chained knockout step reads these.
+
+## Knockout notes (step `knockout`)
+All matches are Bo5, using the same model probabilities as `swiss` (`swiss.game_prob_matrix`).
+- **Chained** (default): plays one drawn bracket per run in `swiss_sims`, so title odds include Swiss uncertainty. It reads `swiss_sims`, so rerun `swiss` first whenever results, the config or the model change. `draw_bracket()` applies the draw rules the user confirmed:
+  - The two 3-0 teams go in opposite halves, each against a 3-2 team.
+  - One 3-1 team, drawn at random, faces the remaining 3-2 team. The other two 3-1 teams face each other.
+  - Same-region matchups and Swiss rematches are allowed.
+- **Fixed** (`--fixed`): plays config `knockout.bracket: [[A, B], [C, D], [E, F], [G, H]]` `n_sims` times. Pairs are in bracket order: the winners of pairs 1 and 2 meet in one semifinal, and the winners of pairs 3 and 4 in the other.
+  - `fixed_bracket()` rejects a missing section, a wrong shape, unknown teams and duplicates.
+  - The user's config has no `bracket` section until the Swiss stage ends.
+- `sim_results.csv` is overwritten by whichever mode ran last; its `mode` column says which.
 
 ## Tests
 `.venv/bin/python -m pytest -q`
