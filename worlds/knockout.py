@@ -137,8 +137,8 @@ def plot_title_odds(summary: pd.DataFrame, mode: str, n: int) -> None:
     plots.save(fig, "title_odds.png")
 
 
-def run(fixed: bool = False) -> None:
-    from worlds.swiss import game_prob_matrix
+def run(fixed: bool = False, snapshot: str | None = None) -> None:
+    from worlds.swiss import check_fresh, game_prob_matrix
 
     cfg = load_config()
     names, _, p = game_prob_matrix(cfg)
@@ -149,6 +149,7 @@ def run(fixed: bool = False) -> None:
         counts, n = simulate((bracket for _ in range(cfg["n_sims"])), len(names), p5, rng)
     else:
         mode = "chained"
+        check_fresh(cfg)
         sims = db.read("SELECT sim, team, wins, losses FROM swiss_sims", parse_dates=())
         brackets = chained_brackets(names, sims, rng, cfg["swiss"]["wins_to_advance"])
         counts, n = simulate(brackets, len(names), p5, rng)
@@ -166,3 +167,9 @@ def run(fixed: bool = False) -> None:
     print(show.to_string(index=False))
     print("saved outputs/sim_results.csv")
     plot_title_odds(summary, mode, n)
+    if snapshot:
+        from worlds.history import HISTORY_PATH, record_snapshot
+        n_results = len(cfg.get("results") or [])
+        record_snapshot(snapshot, summary, n_results)
+        print(f"snapshot {snapshot!r} ({n_results} results) saved to "
+              f"{HISTORY_PATH.relative_to(OUTPUTS_DIR.parent)}")

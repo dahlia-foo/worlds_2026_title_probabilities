@@ -18,6 +18,12 @@ Forecasts the League of Legends World Championship 2026 from pro match data, usi
 
 Full per-team odds for reaching the knockouts, semifinals, final and title are in [`outputs/sim_results.csv`](outputs/sim_results.csv).
 
+## Odds over time
+
+![Title odds over time](outputs/odds_history.png)
+
+Each point is a snapshot of the title odds taken after a batch of results is entered (so far only `pre-swiss`, with 0 results). The six teams with the highest odds at the latest snapshot are shown in color, and an × marks a team eliminated in the Swiss stage. Every snapshot uses the same simulation seed, so a change between snapshots comes from the entered results, not from simulation noise. The data behind the chart is in [`outputs/odds_history.csv`](outputs/odds_history.csv).
+
 ## How it works
 
 ```
@@ -107,8 +113,11 @@ Then rerun:
 
 ```bash
 python -m worlds swiss
-python -m worlds knockout
+python -m worlds knockout --snapshot swiss-r1   # label is optional; it adds a point to the history
+python -m worlds history                        # redraws outputs/odds_history.png
 ```
+
+Re-running a snapshot label replaces that snapshot instead of adding a duplicate. If results were added but `swiss` wasn't rerun, `knockout` stops and asks for `swiss` to be run first, so a snapshot never mixes old Swiss runs with new results.
 
 Enter every result of a round before adding results from the next one. The simulation rejects unknown team names, round 1 results that don't match the draw, and pairings between teams with different records.
 
@@ -122,7 +131,8 @@ knockout:
 ```
 
 ```bash
-python -m worlds knockout --fixed
+python -m worlds knockout --fixed --snapshot post-swiss
+python -m worlds history
 ```
 
 ## Limitations

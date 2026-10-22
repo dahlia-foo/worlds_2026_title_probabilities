@@ -11,6 +11,8 @@ elimination are Bo3, and the rest stay Bo1 (in practice only the round-3 1-1 gro
 Outputs: outputs/swiss_results.csv, outputs/swiss_records.png, and SQLite tables
 swiss_summary (per team) and swiss_sims (per simulation run, for the chained knockout step).
 """
+import hashlib
+import json
 import logging
 from collections import Counter
 
@@ -245,6 +247,27 @@ def game_prob_matrix(cfg: dict) -> tuple[list[str], list[str], np.ndarray]:
     return list(teams.name), list(teams.region), p
 
 
+def inputs_fingerprint(cfg: dict) -> str:
+    """Hash of everything the Swiss runs depend on, so later steps can detect stale swiss_sims."""
+    from worlds.model import MODEL_PATH
+
+    key = {k: cfg.get(k) for k in ("teams", "round1", "results", "swiss", "n_sims", "seed")}
+    key["model_mtime"] = MODEL_PATH.stat().st_mtime if MODEL_PATH.exists() else None
+    return hashlib.sha256(json.dumps(key, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def check_fresh(cfg: dict) -> None:
+    """Raise if swiss_sims was produced from different config results/rules or another model."""
+    try:
+        saved = db.read("SELECT fingerprint FROM swiss_meta", parse_dates=()).fingerprint.iloc[0]
+    except Exception:
+        saved = None
+    if saved != inputs_fingerprint(cfg):
+        raise RuntimeError("swiss_sims is out of date with the config or model "
+                           "(results, draw, rules, seed or a retrained model). "
+                           "Run `python -m worlds swiss` first.")
+
+
 def run() -> None:
     cfg = load_config()
     rules = cfg["swiss"]
@@ -265,6 +288,8 @@ def run() -> None:
     with db.connect() as con:
         db.write_table(con, "swiss_summary", summary)
         db.write_table(con, "swiss_sims", sims)
+        db.write_table(con, "swiss_meta", pd.DataFrame(
+            {"fingerprint": [inputs_fingerprint(cfg)], "n_results": [len(results)]}))
 
     print(f"{cfg['n_sims']:,} Swiss simulations, {len(results)} known results "
           f"(seed {cfg['seed']})")
