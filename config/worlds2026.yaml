@@ -44,7 +44,16 @@ round1:
 
 # Fill in as Swiss matches finish (Swiss starts Oct 23). The sim conditions on these.
 # Example: - {round: 1, winner: Gen.G, loser: Invictus Gaming, score: "1-0"}
-results: []
+results:
+  # Round 1 (Oct 23)
+  - {round: 1, winner: Gen.G,               loser: Invictus Gaming,    score: "1-0"}
+  - {round: 1, winner: Hanwha Life Esports, loser: Top Esports,        score: "1-0"}
+  - {round: 1, winner: Movistar KOI,        loser: Bilibili Gaming,    score: "1-0"}
+  - {round: 1, winner: Karmine Corp,        loser: Anyone's Legend,    score: "1-0"}
+  - {round: 1, winner: Dplus KIA,           loser: G2 Esports,         score: "1-0"}
+  - {round: 1, winner: CTBC Flying Oyster,  loser: Team Liquid,        score: "1-0"}
+  - {round: 1, winner: T1,                  loser: LOS,                score: "1-0"}
+  - {round: 1, winner: LYON,                loser: Team Secret Whales, score: "1-0"}
 
 # --- pipeline settings (added) ---
 recent_patches: 3
