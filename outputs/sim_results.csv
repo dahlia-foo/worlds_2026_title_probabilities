@@ -1,17 +1,17 @@
 team,p_knockout,p_semis,p_final,p_title,mode
-Gen.G,0.9975,0.8554,0.6878,0.5363,chained
-Hanwha Life Esports,0.8378,0.5771,0.3313,0.1607,chained
-Dplus KIA,0.9666,0.6030,0.3025,0.0974,chained
-T1,0.7516,0.4371,0.1997,0.0722,chained
-Bilibili Gaming,0.7358,0.4203,0.1886,0.0698,chained
-G2 Esports,0.6714,0.3290,0.1286,0.0370,chained
-Anyone's Legend,0.3080,0.1257,0.0469,0.0120,chained
-Karmine Corp,0.5165,0.1843,0.0502,0.0084,chained
-Top Esports,0.4705,0.1321,0.0259,0.0037,chained
-Invictus Gaming,0.3722,0.0938,0.0147,0.0012,chained
-Movistar KOI,0.6462,0.1283,0.0136,0.0009,chained
-LYON,0.5587,0.0871,0.0071,0.0002,chained
-Team Liquid,0.0661,0.0138,0.0021,0.0002,chained
-Team Secret Whales,0.0408,0.0069,0.0005,0.0000,chained
-LOS,0.0308,0.0045,0.0004,0.0000,chained
-CTBC Flying Oyster,0.0295,0.0016,0.0001,0.0000,chained
+Gen.G,1.0000,0.8592,0.7131,0.5584,chained
+Dplus KIA,1.0000,0.6500,0.3814,0.1148,chained
+Hanwha Life Esports,0.6546,0.3722,0.2275,0.1108,chained
+T1,0.9109,0.6129,0.2554,0.0956,chained
+Bilibili Gaming,0.9042,0.6017,0.2399,0.0856,chained
+G2 Esports,0.4277,0.1679,0.0692,0.0192,chained
+Top Esports,0.7601,0.2316,0.0384,0.0056,chained
+Karmine Corp,0.3083,0.0879,0.0260,0.0053,chained
+Invictus Gaming,0.6882,0.1900,0.0264,0.0035,chained
+Movistar KOI,0.5810,0.1139,0.0128,0.0007,chained
+LYON,0.4907,0.0776,0.0060,0.0003,chained
+Team Liquid,0.1450,0.0236,0.0027,0.0002,chained
+LOS,0.1191,0.0114,0.0012,0.0000,chained
+CTBC Flying Oyster,0.0102,0.0001,0.0000,0.0000,chained
+Anyone's Legend,0.0000,0.0000,0.0000,0.0000,chained
+Team Secret Whales,0.0000,0.0000,0.0000,0.0000,chained
