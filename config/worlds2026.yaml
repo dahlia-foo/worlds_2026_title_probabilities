@@ -72,6 +72,13 @@ results:
   - {round: 3, winner: Bilibili Gaming,     loser: Karmine Corp,       score: "1-0"}
   - {round: 3, winner: LOS,                 loser: Team Secret Whales, score: "2-0"}
   - {round: 3, winner: Team Liquid,         loser: Anyone's Legend,    score: "2-0"}
+  # Round 4
+  - {round: 4, winner: T1,                  loser: Movistar KOI,       score: "2-0"}
+  - {round: 4, winner: Invictus Gaming,     loser: LYON,               score: "2-1"}
+  - {round: 4, winner: Top Esports,         loser: Bilibili Gaming,    score: "2-1"}
+  - {round: 4, winner: Karmine Corp,        loser: CTBC Flying Oyster, score: "2-0"}
+  - {round: 4, winner: LOS,                 loser: Team Liquid,        score: "2-1"}
+  - {round: 4, winner: Hanwha Life Esports, loser: G2 Esports,         score: "2-0"}
 
 # --- pipeline settings (added) ---
 recent_patches: 3
