@@ -75,8 +75,7 @@ Requires Python 3.13.
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install pandas==3.0.6 numpy==2.5.4 scikit-learn==1.9.1 xgboost==3.4.1 \
-    matplotlib==3.11.2 PyYAML==6.0.3 joblib==1.6.0 pytest==9.1.1
+pip install -r requirements.txt
 ```
 
 Download the yearly match data CSVs from [Oracle's Elixir](https://oracleselixir.com/tools/downloads) and save them in `data/raw/` with names ending in `_oe.csv`:
