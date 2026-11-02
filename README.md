@@ -6,17 +6,17 @@ Forecasts the League of Legends World Championship 2026 from pro match data, usi
 
 ## Current prediction
 
-**As of the end of the Swiss stage, Nov 2, 2026** (all 33 Swiss results entered; ratings use games through Oct 18, 2026; 10,000 simulated knockout brackets)
+**As of the quarterfinal draw, Nov 2026** (all 33 Swiss results entered; ratings use games through Oct 18, 2026; 10,000 simulations of the actual bracket)
 
 | Team | Title chance |
 |---|---|
-| Gen.G | 61.8% |
-| Dplus KIA | 13.5% |
-| T1 | 12.0% |
-| Bilibili Gaming | 9.5% |
-| Karmine Corp | 1.8% |
+| Gen.G | 74.7% |
+| T1 | 9.2% |
+| Bilibili Gaming | 7.3% |
+| Dplus KIA | 6.8% |
+| Karmine Corp | 0.9% |
 
-The quarterfinal bracket is still drawn at random under the Worlds draw rules until the real draw is entered. Full per-team odds for reaching the semifinals, final and title are in [`outputs/sim_results.csv`](outputs/sim_results.csv).
+Quarterfinals: Top Esports vs Invictus Gaming and Gen.G vs LYON on one side of the bracket, Dplus KIA vs Bilibili Gaming and T1 vs Karmine Corp on the other. Full per-team odds for reaching the semifinals, final and title are in [`outputs/sim_results.csv`](outputs/sim_results.csv).
 
 ## Odds over time
 

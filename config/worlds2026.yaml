@@ -31,6 +31,13 @@ knockout:
   size: 8
   format: bo5
   # QF draw: each 3-0 team faces a 3-2 team, 3-0 teams on opposite sides of the bracket
+  # Bracket order: winners of pairs 1+2 meet in one semifinal, pairs 3+4 in the other.
+  bracket:
+    - [Top Esports, Invictus Gaming]
+    - [Gen.G, LYON]
+    - [Dplus KIA, Bilibili Gaming]
+    - [T1, Karmine Corp]
+  results: []   # knockout series, e.g. {winner: Gen.G, loser: LYON, score: "3-1"}
 
 round1:
   - [Gen.G, Invictus Gaming]
