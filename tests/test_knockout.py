@@ -98,3 +98,30 @@ def test_fixed_bracket_validation(bracket, msg):
     cfg = {"knockout": {"bracket": bracket} if bracket else {}}
     with pytest.raises(ValueError, match=msg):
         fixed_bracket(NAMES, cfg)
+
+
+BRACKET = [(0, 7), (3, 4), (1, 6), (2, 5)]
+
+
+def test_knockout_results_lock_winners():
+    from worlds.knockout import knockout_results
+    res = [{"winner": "T7", "loser": "T0"}, {"winner": "T3", "loser": "T4"},
+           {"winner": "T7", "loser": "T3"}]                     # QF upset, then its semifinal
+    fixed = knockout_results(NAMES, BRACKET, res)
+    rng = np.random.default_rng(4)
+    counts, n = simulate((BRACKET for _ in range(500)), 16, P5, rng, fixed)
+    s = summarize(NAMES, counts, n).set_index("team")
+    assert s.loc["T0", "p_semis"] == 0 and s.loc["T4", "p_semis"] == 0
+    assert s.loc["T7", "p_final"] == 1 and s.loc["T3", "p_final"] == 0
+    assert s.p_title.sum() == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize("res, msg", [
+    ([{"winner": "T0", "loser": "T3"}], "enter earlier rounds first"),   # SF before QFs
+    ([{"winner": "T0", "loser": "T1"}], "enter earlier rounds first"),   # not a match
+    ([{"winner": "T0", "loser": "Nobody"}], "unknown or missing loser"),
+])
+def test_knockout_results_validation(res, msg):
+    from worlds.knockout import knockout_results
+    with pytest.raises(ValueError, match=msg):
+        knockout_results(NAMES, BRACKET, res)

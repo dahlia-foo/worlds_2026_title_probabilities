@@ -6,23 +6,27 @@ Forecasts the League of Legends World Championship 2026 from pro match data, usi
 
 ## Current prediction
 
-**As of pre-Swiss, Oct 2026** (ratings use games through Oct 18, 2026; 10,000 simulated tournaments)
+**As of the end of the Swiss stage, Nov 2, 2026** (all 33 Swiss results entered; ratings use games through Oct 18, 2026; 10,000 simulated knockout brackets)
 
 | Team | Title chance |
 |---|---|
-| Gen.G | 51.4% |
-| Hanwha Life Esports | 17.7% |
-| T1 | 8.3% |
-| Dplus KIA | 7.4% |
-| Bilibili Gaming | 7.4% |
+| Gen.G | 61.8% |
+| Dplus KIA | 13.5% |
+| T1 | 12.0% |
+| Bilibili Gaming | 9.5% |
+| Karmine Corp | 1.8% |
 
-Full per-team odds for reaching the knockouts, semifinals, final and title are in [`outputs/sim_results.csv`](outputs/sim_results.csv).
+The quarterfinal bracket is still drawn at random under the Worlds draw rules until the real draw is entered. Full per-team odds for reaching the semifinals, final and title are in [`outputs/sim_results.csv`](outputs/sim_results.csv).
 
 ## Odds over time
 
-![Title odds over time](outputs/odds_history.png)
+For comparison, the forecast before any Swiss match was played:
 
-Each point is a snapshot of the title odds taken after a batch of results is entered (so far only `pre-swiss`, with 0 results). The six teams with the highest odds at the latest snapshot are shown in color, and an × marks a team eliminated in the Swiss stage. Every snapshot uses the same simulation seed, so a change between snapshots comes from the entered results, not from simulation noise. The data behind the chart is in [`outputs/odds_history.csv`](outputs/odds_history.csv).
+![Title odds before the Swiss stage](outputs/snapshots/pre-swiss/title_odds.png)
+
+Hanwha Life Esports, the second favorite before the event (17.7%), went 2-3 and was eliminated. Gen.G went 3-0, and its title chance rose from 51.4% to 61.8%.
+
+A snapshot is saved after every round, each in its own folder under [`outputs/snapshots/`](outputs/snapshots/), with the title odds chart, the Swiss records chart and both CSVs as they stood at that point. Every snapshot uses the same simulation seed, so a change between snapshots comes from the entered results, not from simulation noise. A line chart of every team across all snapshots is in [`outputs/odds_history.png`](outputs/odds_history.png), with the data in [`outputs/odds_history.csv`](outputs/odds_history.csv).
 
 ## How it works
 
@@ -113,11 +117,11 @@ Then rerun:
 
 ```bash
 python -m worlds swiss
-python -m worlds knockout --snapshot swiss-r1   # label is optional; it adds a point to the history
+python -m worlds knockout --snapshot swiss-r1   # optional label: saves outputs/snapshots/swiss-r1/
 python -m worlds history                        # redraws outputs/odds_history.png
 ```
 
-Re-running a snapshot label replaces that snapshot instead of adding a duplicate. If results were added but `swiss` wasn't rerun, `knockout` stops and asks for `swiss` to be run first, so a snapshot never mixes old Swiss runs with new results.
+Re-running a snapshot label replaces that snapshot (its rows in the history and its folder) instead of adding a duplicate. If results were added but `swiss` wasn't rerun, `knockout` stops and asks for `swiss` to be run first, so a snapshot never mixes old Swiss runs with new results.
 
 Enter every result of a round before adding results from the next one. The simulation rejects unknown team names, round 1 results that don't match the draw, and pairings between teams with different records.
 
@@ -132,6 +136,20 @@ knockout:
 
 ```bash
 python -m worlds knockout --fixed --snapshot post-swiss
+python -m worlds history
+```
+
+**During the knockout stage,** add each finished series under `knockout.results` and rerun with a new label. A semifinal can be entered once both of its quarterfinals are in, and the final once both semifinals are.
+
+```yaml
+knockout:
+  bracket: [...]
+  results:
+    - {winner: Team A, loser: Team B, score: "3-1"}
+```
+
+```bash
+python -m worlds knockout --fixed --snapshot quarterfinals
 python -m worlds history
 ```
 

@@ -4,7 +4,10 @@ Modes:
   chained (default)  For every Swiss run saved by Step 4 (`swiss_sims`), draw a quarterfinal
                      bracket from that run's records and play it once -> title odds that include
                      Swiss uncertainty.
-  fixed (--fixed)    Play the real bracket from config `knockout.bracket` n_sims times.
+  fixed (--fixed)    Play the real bracket from config `knockout.bracket` n_sims times. Played
+                     series in `knockout.results` ({winner, loser, score}) are locked in; a
+                     result is accepted only once the match it belongs to is decided by earlier
+                     results (quarterfinals first, then semifinals, then the final).
 
 Quarterfinal draw (chained): the two 3-0 teams go in opposite halves, each against a 3-2 team.
 One 3-1 team, drawn at random, faces the remaining 3-2 team, and the other two 3-1 teams face
@@ -48,22 +51,31 @@ def draw_bracket(advanced: list[tuple[int, int]], rng: np.random.Generator) -> l
     return [top, mutual, bottom, lucky]
 
 
-def play_bracket(bracket: list[tuple], p5: np.ndarray, rng: np.random.Generator):
-    """Play one bracket. Returns (semifinalists, finalists, champion) as team indices."""
+def play_bracket(bracket: list[tuple], p5: np.ndarray, rng: np.random.Generator,
+                 fixed: dict | None = None):
+    """Play one bracket. Returns (semifinalists, finalists, champion) as team indices.
+
+    fixed maps frozenset({a, b}) -> winner for series already played. One random number is drawn
+    per series either way, so locking in a result doesn't shift the rest of the random stream.
+    """
+    fixed = fixed or {}
+
     def win(a, b):
-        return a if rng.random() < p5[a, b] else b
+        r = rng.random()
+        return fixed.get(frozenset((a, b)), a if r < p5[a, b] else b)
 
     semis = [win(a, b) for a, b in bracket]
     finals = [win(semis[0], semis[1]), win(semis[2], semis[3])]
     return semis, finals, win(*finals)
 
 
-def simulate(brackets, n_teams: int, p5: np.ndarray, rng: np.random.Generator):
+def simulate(brackets, n_teams: int, p5: np.ndarray, rng: np.random.Generator,
+             fixed: dict | None = None):
     """Play each bracket once; return per-team counts of QF, semis, final and title."""
     counts = np.zeros((4, n_teams), int)
     n = 0
     for bracket in brackets:
-        semis, finals, champ = play_bracket(bracket, p5, rng)
+        semis, finals, champ = play_bracket(bracket, p5, rng, fixed)
         counts[0, [t for pair in bracket for t in pair]] += 1
         counts[1, semis] += 1
         counts[2, finals] += 1
@@ -97,6 +109,40 @@ def fixed_bracket(names: list[str], cfg: dict) -> list[tuple]:
     return [(idx[a], idx[b]) for a, b in bracket]
 
 
+def knockout_results(names: list[str], bracket: list[tuple], results: list[dict]) -> dict:
+    """Validate config knockout.results against the bracket; return {frozenset(pair): winner}.
+
+    Results are replayed round by round, so a semifinal result needs both of its quarterfinals
+    entered first, and the final needs both semifinals. Each half of the bracket can be ahead
+    of the other.
+    """
+    idx = {n: i for i, n in enumerate(names)}
+    pending = []
+    for r in results or []:
+        for key in ("winner", "loser"):
+            if r.get(key) not in idx:
+                raise ValueError(f"knockout result {r}: unknown or missing {key}")
+        pending.append((idx[r["winner"]], idx[r["loser"]], r))
+    fixed: dict = {}
+    stage: list = list(bracket)      # a match is None until both of its feeders are decided
+    while stage:
+        pairs = {frozenset(p) for p in stage if p is not None}
+        for w, l, r in list(pending):
+            if frozenset((w, l)) in pairs:
+                fixed[frozenset((w, l))] = w
+                pending.remove((w, l, r))
+        if len(stage) == 1:
+            break
+        winners = [fixed.get(frozenset(p)) if p is not None else None for p in stage]
+        stage = [(winners[i], winners[i + 1]) if None not in winners[i:i + 2] else None
+                 for i in range(0, len(winners), 2)]
+    if pending:
+        bad = [f"{names[w]} vs {names[l]}" for w, l, _ in pending]
+        raise ValueError(f"knockout results {bad} don't match a bracket match that is decided "
+                         f"by the earlier results; enter earlier rounds first")
+    return fixed
+
+
 def summarize(names: list[str], counts: np.ndarray, n: int) -> pd.DataFrame:
     out = pd.DataFrame({"team": names, "p_knockout": counts[0] / n, "p_semis": counts[1] / n,
                         "p_final": counts[2] / n, "p_title": counts[3] / n})
@@ -112,7 +158,8 @@ def _pct(p: float, decimals: int) -> str:
     return f"{p * 100:.{decimals}f}%"
 
 
-def plot_title_odds(summary: pd.DataFrame, mode: str, n: int) -> None:
+def plot_title_odds(summary: pd.DataFrame, mode: str, n: int, stage: str | None = None,
+                    n_swiss: int = 0, n_knockout: int = 0) -> None:
     s = summary[summary.p_knockout > 0].iloc[::-1]
     y = np.arange(len(s))
     fig, ax = plt.subplots(figsize=(7.5, 0.38 * len(s) + 1.6))
@@ -126,13 +173,13 @@ def plot_title_odds(summary: pd.DataFrame, mode: str, n: int) -> None:
     ax.set_xlim(0, s.p_title.max() * 100 * 1.6)
     ax.grid(axis="x"); ax.set_axisbelow(True)
     ax.set_xlabel("Chance to win Worlds 2026 (%)")
+    ax.set_title("Worlds 2026 title odds" + (f": {stage}" if stage else ""))
     if mode == "chained":
-        ax.set_title("Worlds 2026 title odds")
         note = (f"{n:,} simulations of the Swiss stage, each followed by a drawn knockout "
-                f"bracket (Bo5).")
+                f"bracket (Bo5). {n_swiss} of 33 Swiss results entered.")
     else:
-        ax.set_title("Worlds 2026 title odds: actual knockout bracket")
-        note = f"{n:,} simulations of the fixed bracket from config (Bo5)."
+        note = (f"{n:,} simulations of the actual knockout bracket (Bo5). "
+                f"{n_knockout} of 7 knockout results entered.")
     fig.text(0.01, -0.02, note, fontsize=8, color=plots.TEXT_2)
     plots.save(fig, "title_odds.png")
 
@@ -144,9 +191,12 @@ def run(fixed: bool = False, snapshot: str | None = None) -> None:
     names, _, p = game_prob_matrix(cfg)
     p5 = p_series(p, BEST_OF)
     rng = np.random.default_rng(cfg["seed"])
+    ko_results = (cfg.get("knockout") or {}).get("results") or []
     if fixed:
         mode, bracket = "fixed", fixed_bracket(names, cfg)
-        counts, n = simulate((bracket for _ in range(cfg["n_sims"])), len(names), p5, rng)
+        locked = knockout_results(names, bracket, ko_results)
+        counts, n = simulate((bracket for _ in range(cfg["n_sims"])), len(names), p5, rng,
+                             locked)
     else:
         mode = "chained"
         check_fresh(cfg)
@@ -166,10 +216,13 @@ def run(fixed: bool = False, snapshot: str | None = None) -> None:
         show[c] = (show[c] * 100).map("{:.1f}%".format)
     print(show.to_string(index=False))
     print("saved outputs/sim_results.csv")
-    plot_title_odds(summary, mode, n)
+    n_swiss = len(cfg.get("results") or [])
+    n_ko = len(ko_results) if fixed else 0
+    plot_title_odds(summary, mode, n, snapshot, n_swiss, n_ko)
     if snapshot:
-        from worlds.history import HISTORY_PATH, record_snapshot
-        n_results = len(cfg.get("results") or [])
-        record_snapshot(snapshot, summary, n_results)
-        print(f"snapshot {snapshot!r} ({n_results} results) saved to "
-              f"{HISTORY_PATH.relative_to(OUTPUTS_DIR.parent)}")
+        from worlds.history import HISTORY_PATH, archive_snapshot, record_snapshot
+        record_snapshot(snapshot, summary, n_swiss + n_ko)
+        folder = archive_snapshot(snapshot)
+        print(f"snapshot {snapshot!r} ({n_swiss + n_ko} results) saved to "
+              f"{HISTORY_PATH.relative_to(OUTPUTS_DIR.parent)} and "
+              f"{folder.relative_to(OUTPUTS_DIR.parent)}/")

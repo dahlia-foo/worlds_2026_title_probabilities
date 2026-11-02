@@ -40,3 +40,26 @@ def test_fingerprint_changes_with_results():
     played = base | {"results": [{"round": 1, "winner": "A", "loser": "B"}]}
     assert inputs_fingerprint(base) == inputs_fingerprint(dict(base))
     assert inputs_fingerprint(base) != inputs_fingerprint(played)
+
+
+def test_archive_snapshot_replaces_folder(tmp_path):
+    from worlds.history import archive_snapshot
+    src, dest = tmp_path / "out", tmp_path / "snaps"
+    src.mkdir()
+    (src / "title_odds.png").write_text("v1")
+    archive_snapshot("swiss r1", src, dest)
+    (src / "title_odds.png").write_text("v2")
+    folder = archive_snapshot("swiss r1", src, dest)
+    assert folder.name == "swiss-r1"
+    assert (folder / "title_odds.png").read_text() == "v2"
+    assert [p.name for p in dest.iterdir()] == ["swiss-r1"]
+
+
+def test_eliminated_rule():
+    from worlds.history import eliminated
+    h = pd.DataFrame({"p_advance": [0.0, 1.0, 1.0, 1.0, 0.4, 1.0],
+                      "p_semis": [0.0, 0.0, 1.0, 1.0, 0.0, 0.6],
+                      "p_final": [0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+                      "p_title": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})
+    # out in Swiss, lost QF, lost SF, lost final | alive but tiny odds (not eliminated) x2
+    assert eliminated(h).tolist() == [True, True, True, True, False, False]

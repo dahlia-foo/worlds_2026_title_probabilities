@@ -29,9 +29,19 @@ The guard fired on the first try, because the Swiss runs on disk predated the fi
 
 ## Current state
 
-There is one snapshot so far, `pre-swiss`, taken with 0 results in the config. Its numbers match the pre-tournament title odds in Step 5: Gen.G 51.4%, Hanwha Life Esports 17.7%, T1 8.3%, Dplus KIA 7.4%, Bilibili Gaming 7.4%.
+There are six snapshots, one before the Swiss stage and one after each of its five rounds (`pre-swiss`, `swiss-r1` to `swiss-r5`). The first, `pre-swiss`, matches the pre-tournament title odds in Step 5: Gen.G 51.4%, Hanwha Life Esports 17.7%, T1 8.3%, Dplus KIA 7.4%, Bilibili Gaming 7.4%.
+
+After all 33 Swiss results, the title odds are Gen.G 61.8%, Dplus KIA 13.5%, T1 12.0% and Bilibili Gaming 9.5%. The biggest single move came in round 5. Hanwha Life Esports, second favorite for most of the Swiss stage, lost to Bilibili Gaming and was eliminated at 2-3, so its 14.3% title chance dropped to zero.
 
 ![Title odds over time](../outputs/odds_history.png)
+
+## Keeping a copy of every stage
+
+Later, we also started saving the full output of every snapshot, not just its row in the history file. Each snapshot now gets its own folder under `outputs/snapshots/<label>/`, containing the title odds chart, the Swiss records chart and both CSVs as they stood at that point. Each saved chart has the stage in its title (for example "Worlds 2026 title odds: swiss-r3"), so the copies can be told apart.
+
+This only began after the Swiss stage had finished, so the first six folders (`pre-swiss` through `swiss-r5`) were rebuilt afterwards. We re-ran each stage with only the results known at that point, using the same seed and model. All six reproduced their original numbers in the history file exactly, which also confirms the fixed seed works as intended. The config file wasn't changed during the rebuild.
+
+For the knockout stage, the fixed-bracket mode can now take results too (`knockout.results`). This lets the history continue through the quarterfinals, semifinals and final. A team that loses a knockout series is marked × on the chart, the same as a team eliminated in the Swiss stage.
 
 ## Checks
 - Saving the same label twice leaves one set of rows, with the newer numbers.
@@ -39,4 +49,7 @@ There is one snapshot so far, `pre-swiss`, taken with 0 results in the config. I
 - The Swiss fingerprint changes when results are added.
 - Running the real `pre-swiss` snapshot twice still leaves exactly 16 rows.
 - `--snapshot` is rejected with any command other than `knockout` or `all`.
-- The full test suite (27 tests) passes.
+- Saving a snapshot folder again replaces it rather than adding a second one.
+- Entered knockout results are respected in every run, and a semifinal or final entered before the series that feed it is rejected.
+- The elimination rule marks teams knocked out in the Swiss stage or in any knockout round, but not teams that are still alive with very small odds.
+- The full test suite (33 tests) passes.

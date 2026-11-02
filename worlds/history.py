@@ -7,6 +7,8 @@ outputs/odds_history.csv. Re-running a label replaces its rows in place, so snap
 The Swiss and knockout sims both use the fixed config seed, so differences between snapshots
 come from the results entered in the config, not from simulation randomness.
 """
+import re
+import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -18,6 +20,8 @@ from worlds.config import OUTPUTS_DIR
 from worlds.plots import plt
 
 HISTORY_PATH = OUTPUTS_DIR / "odds_history.csv"
+SNAPSHOTS_DIR = OUTPUTS_DIR / "snapshots"
+ARCHIVED = ["title_odds.png", "sim_results.csv", "swiss_records.png", "swiss_results.csv"]
 COLUMNS = ["label", "timestamp", "n_results_in_config", "team", "p_advance", "p_semis",
            "p_final", "p_title"]
 N_HIGHLIGHT = 6
@@ -54,6 +58,28 @@ def record_snapshot(label: str, summary: pd.DataFrame, n_results: int,
     return out
 
 
+def archive_snapshot(label: str, src: Path = OUTPUTS_DIR, dest: Path = SNAPSHOTS_DIR) -> Path:
+    """Copy this run's charts and CSVs to outputs/snapshots/<label>/, replacing an older copy."""
+    folder = dest / re.sub(r"[^A-Za-z0-9._-]+", "-", label.strip())
+    if folder.exists():
+        shutil.rmtree(folder)
+    folder.mkdir(parents=True)
+    for name in ARCHIVED:
+        if (src / name).exists():
+            shutil.copy2(src / name, folder / name)
+    return folder
+
+
+def eliminated(h: pd.DataFrame) -> pd.Series:
+    """Rows where the team is certainly out: lost in Swiss, or lost a locked-in knockout series.
+
+    A certain stage (probability 1) followed by exactly 0 at the next one only happens when a
+    result has been entered, never by chance.
+    """
+    return ((h.p_advance == 0) | ((h.p_advance == 1) & (h.p_semis == 0))
+            | ((h.p_semis == 1) & (h.p_final == 0)) | ((h.p_final == 1) & (h.p_title == 0)))
+
+
 def _spread(values: list[float], min_gap: float) -> list[float]:
     """Nudge label positions apart so direct labels don't overlap."""
     order = np.argsort(values)
@@ -80,8 +106,8 @@ def plot_history(hist: pd.DataFrame) -> None:
     ends = []
     for team in [t for t in hist.team.unique() if t not in top] + top[::-1]:
         h = hist[hist.team == team].assign(x=lambda d: d.label.map(x_of)).sort_values("x")
-        out = h[h.p_advance == 0]
-        if len(out):  # eliminated in Swiss: draw down to 0 at that snapshot, then stop
+        out = h[eliminated(h)]
+        if len(out):  # eliminated: draw down to 0 at that snapshot, then stop
             h = h[h.x <= out.x.iloc[0]]
         x, y = h.x.values, h.p_title.values * 100
         highlight = team in top
@@ -108,7 +134,7 @@ def plot_history(hist: pd.DataFrame) -> None:
     ax.grid(axis="y"); ax.set_axisbelow(True)
     ax.set_title("Worlds 2026 title odds over time")
     fig.text(0.01, -0.02, f"Top {N_HIGHLIGHT} teams at the latest snapshot in color, others in "
-             f"grey. × = eliminated in the Swiss stage (title chance drops to 0).\n"
+             f"grey. × = eliminated (title chance drops to 0).\n"
              f"Fixed simulation seed: changes between snapshots come from entered results.",
              fontsize=8, color=plots.TEXT_2)
     plots.save(fig, "odds_history.png")
