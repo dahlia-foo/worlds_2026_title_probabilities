@@ -98,3 +98,38 @@ worlds_start: {2025: 2025-10-14, 2026: 2026-10-15}   # WLDs rows before this are
 season_regression: 0.5    # share of team Elo regressed to region mean at the start of a new season
 n_sims: 10000
 seed: 2026
+
+swiss_window:
+  start: "2026-10-23"   # UTC
+  end: "2026-11-02"     # exclusive, excludes knockout games
+
+# Baram acceleration-theory labels (Worlds 2026 chart)
+# accel=+2 (red), flex=+1 (purple), brake=0 (blue), spike=-1 (yellow), hyperscale=-2 (green)
+tempo_labels:
+  top:
+    accel: [Jayce, Olaf, Ambessa, Renekton]
+    flex: [Rumble, Gnar, Kennen, Jax, Aatrox, Galio]
+    brake: [K'Sante, Gragas, Camille, Yorick, Kled, Shen]
+    spike: [Zaahen, Gwen] 
+    hyperscale: [Sion, Dr. Mundo, Ornn]   
+  jungle:
+    accel: [Lee Sin, Qiyana]
+    flex: [Naafiri, Jarvan IV, Xin Zhao] 
+    brake: [Trundle, Cho'Gath]   
+    spike: [Pantheon, Vi, Nocturne, Wukong]
+    hyperscale: [Skarner, Sejuani, Maokai]
+  mid:
+    accel: [Cassiopeia, Ryze, Viktor, Syndra]   
+    flex: [Orianna, Locke, Ahri, Taliyah, Aurora, Tristana, LeBlanc]   
+    brake: [Galio, Anivia, Twisted Fate, Annie, Lissandra]
+    spike: [Yone, Akali, Sylas]
+  bot:
+    accel: [Ezreal, Caitlyn, Lucian, Kalista, Draven]
+    flex: [Ashe, Yunara, Xayah, Varus, Tristana]
+    brake: [Corki, Jhin, Miss Fortune, Ziggs]   
+    spike: [Sivir, Kai'Sa, Zeri, Aphelios, Jinx]
+  support:
+    accel: [Bard, Karma, Neeko, Seraphine, Lux]
+    flex: [Lulu, Milio, Nami, Rakan, Alistar, Blitzcrank, Shen, Pyke]
+    brake: [Renata Glasc, Nautilus, Rell, Poppy, Thresh, Leona]   
+    spike: [Yuumi]

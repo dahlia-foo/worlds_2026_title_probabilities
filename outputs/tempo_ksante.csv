@@ -1,0 +1,15 @@
+gameid,team,opponent,opp_top,win,elo_win_chance
+LOLTMNT02_482304,G2 Esports,Dplus KIA,Olaf,0,0.495
+LOLTMNT02_482325,LOS,T1,Jayce,0,0.234
+LOLTMNT02_482335,LYON,Team Secret Whales,Rumble,1,0.469
+LOLTMNT02_482570,G2 Esports,LOS,Jayce,1,0.738
+LOLTMNT02_482587,Invictus Gaming,Team Secret Whales,Shen,1,0.526
+LOLTMNT02_482606,Dplus KIA,T1,Jayce,1,0.500
+LOLTMNT02_482620,Team Liquid,Bilibili Gaming,Camille,0,0.362
+LOLTMNT02_482805,LYON,Gen.G,Camille,0,0.195
+LOLTMNT02_483314,Top Esports,Hanwha Life Esports,Ambessa,0,0.233
+LOLTMNT02_485267,Bilibili Gaming,Top Esports,Aatrox,0,0.692
+LOLTMNT02_486192,LYON,Invictus Gaming,Jayce,0,0.525
+LOLTMNT02_486479,Hanwha Life Esports,G2 Esports,Olaf,1,0.665
+LOLTMNT02_486555,LYON,LOS,Renekton,1,0.510
+LOLTMNT02_486571,Hanwha Life Esports,Bilibili Gaming,Olaf,0,0.551

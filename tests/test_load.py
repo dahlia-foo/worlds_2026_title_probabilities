@@ -13,7 +13,8 @@ def _game(gameid, date, game, league, blue, red, blue_wins, n_players=10):
             gameid=gameid, datacompleteness="complete", league=league, split="Summer",
             playoffs=0, date=pd.Timestamp(date), game=game, patch="16.20",
             gamelength=1800, side=side, teamname=team, teamid=f"id:{team}",
-            result=int(won), kills=10, deaths=5, golddiffat15=500.0,
+            result=int(won), kills=10, deaths=5, golddiffat10=200.0, golddiffat15=500.0,
+            golddiffat20=800.0, golddiffat25=1000.0,
             xpdiffat15=0.0, csdiffat15=0.0)
         rows.append({**base, "position": "team"})
         for i, pos in enumerate(POSITIONS):

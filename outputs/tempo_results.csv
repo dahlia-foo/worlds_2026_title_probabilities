@@ -1,0 +1,24 @@
+analysis,group,metric,n,estimate,ci_lo,ci_hi,verdict
+H1,higher-tempo comp,win rate,48,0.4792,0.3447,0.6167,too few games to tell
+H1,higher-tempo comp,wins above Elo,48,-0.0068,-0.1412,0.1270,too few games to tell
+H1,tempo diff (+1),"log-odds per +1, Elo-controlled",51,0.0673,-0.8141,0.9045,too few games to tell
+H3,A: tempo jungle + accel mid,win rate,19,0.4211,0.2314,0.6372,
+H3,A: tempo jungle + accel mid,wins above Elo,19,-0.0773,-0.2325,0.0784,too few games to tell
+H3,B: scaling jungle + accel bot + brake top,win rate,5,0.4000,0.1176,0.7693,
+H3,B: scaling jungle + accel bot + brake top,wins above Elo,5,-0.0776,-0.5246,0.3694,too few games to tell
+H3,Other,win rate,78,0.5256,0.4162,0.6326,
+H3,Other,wins above Elo,78,0.0238,-0.0178,0.0706,
+H3,A vs B head-to-head,A wins,1,0.0000,,,too few games to tell
+H6,accel minus spike junglers@10,gold diff vs enemy jungler (raw),32 vs 39,25.2973,-228.4124,276.6099,
+H6,accel minus spike junglers@10,gold diff vs enemy jungler (Elo-adjusted),32 vs 39,25.2733,-230.3727,277.1899,too few games to tell
+H6,accel minus spike junglers@25,gold diff vs enemy jungler (raw),31 vs 38,791.0866,-27.6270,1621.2926,
+H6,accel minus spike junglers@25,gold diff vs enemy jungler (Elo-adjusted),31 vs 38,747.4024,-47.7582,1557.8313,too few games to tell
+H6,"accel minus spike junglers, gain 10->25",gold diff change (raw),31 vs 38,732.2377,-9.8744,1490.7818,
+H6,"accel minus spike junglers, gain 10->25",gold diff change (Elo-adjusted),31 vs 38,687.2092,-29.8553,1390.2640,too few games to tell
+H6 head-to-head,Lee Sin vs Nocturne,Lee Sin wins / gold@15 / gold@25,3,1.0000,-149.6667,851.0000,
+H6 head-to-head,Lee Sin vs Qiyana,Lee Sin wins / gold@15 / gold@25,5,2.0000,-516.4000,-1462.6000,
+H6 head-to-head,Nocturne vs Qiyana,Nocturne wins / gold@15 / gold@25,2,2.0000,-623.0000,-444.0000,too few games to tell
+H6 head-to-head,Nocturne vs Vi,Nocturne wins / gold@15 / gold@25,2,1.0000,32.5000,130.5000,too few games to tell
+H6 head-to-head,Qiyana vs Vi,Qiyana wins / gold@15 / gold@25,2,0.0000,-135.5000,-500.5000,too few games to tell
+K'Sante,K'Sante (top),win rate,14,0.4286,0.2138,0.6741,
+K'Sante,K'Sante (top),wins above Elo,14,-0.0496,-0.2832,0.1717,

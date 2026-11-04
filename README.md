@@ -72,6 +72,50 @@ Lower is better for log loss and Brier score. The logistic regression also had t
 
 Details on Elo tuning, the season-to-season rating regression and feature weights are in [`notes/03-model.md`](notes/03-model.md).
 
+## Testing Korea's acceleration theory
+
+Korean analyst Baram's acceleration theory (가속도 이론) sorts champions by when they want the game to be decided: **accel** (+2), **flex** (+1), **brake** (0), **spike** (-1) and **hyperscale** (-2). We used the role-by-role labels from his Worlds 2026 chart, stored as `tempo_labels` in the config, to look at what happened in the Worlds 2026 Swiss stage. The labels cover 98.2% of Swiss picks.
+
+**What this is and isn't.** This is a descriptive look at the 51 Swiss games (Oct 23 to Oct 31, 2026), not a test of the theory in general. Knockout games are excluded. Team strength is controlled with each team's Elo before every game: "wins above Elo" is how much more often a group won than its teams' ratings predicted. Every verdict is one of "consistent with", "not consistent with" or "too few games to tell", decided by whether the 95% confidence interval excludes zero. Run it with `python -m worlds tempo`. Full numbers are in [`outputs/tempo_results.csv`](outputs/tempo_results.csv).
+
+![Tempo and winning](outputs/tempo_effects.png)
+
+**H1. Do faster comps win more?**
+- *Hypothesis:* the team whose picks average a higher tempo label wins more often.
+- *Evidence:* in the 48 games where the two comps differed, the faster comp won 23 (47.9%, CI 34.5% to 61.7%). After accounting for team strength, it won 0.7 points *less* often than expected (CI -14.1 to +12.7). In a regression on all 51 games, with Elo held fixed, each +1 of tempo difference changed the log-odds of winning by +0.07 (CI -0.81 to +0.90).
+- *Verdict:* **too few games to tell.** The data shows no edge for faster comps either way.
+
+**H3. Comp archetypes**
+- *Hypothesis:* a tempo jungler with an accel mid (archetype A), or a scaling jungler with an accel bot and a brake top (archetype B), outperforms other comps.
+- *Evidence:*
+  - **Archetype A** (19 comps) went 8-11, 7.7 points below Elo expectation (CI -23.3 to +7.8).
+  - **Archetype B** appeared only 5 times, going 2-3 (-7.8 points, CI -52.5 to +36.9).
+  - **All other comps** (78) were 2.4 points above expectation (CI -1.8 to +7.1).
+  - A and B met once, and B won.
+- *Verdict:* **too few games to tell** for both archetypes.
+
+![Jungler gold curves](outputs/tempo_gold_curves.png)
+
+**H6. Do accel junglers lead early and fade by 20 to 25 minutes?**
+- *Hypothesis:* accel junglers (Lee Sin, Qiyana) are ahead of the enemy jungler early, but their lead flattens by 20 to 25 minutes, while spike junglers (Vi, Nocturne and others) catch up.
+- *Evidence:*
+  - **At 10 minutes,** accel junglers were 25 gold ahead of spike junglers relative to their opponents (CI -230 to +277), with team strength accounted for. So no clear early lead.
+  - **From 10 to 25 minutes,** accel junglers gained 687 gold more than spike junglers (CI -30 to +1,390). That's the opposite of fading, though the interval still includes zero.
+  - **Qiyana drives most of this,** rising from +287 at 10 minutes to +1,187 at 25 (13 games). Lee Sin went from -106 to +213 (19 games), and Vi and Nocturne drifted slightly negative.
+  - **Head-to-head:** Lee Sin vs Qiyana happened 5 times, with Lee Sin winning 2 and trailing by 1,463 gold at 25 minutes on average. Every other pairing had 3 games or fewer.
+- *Verdict:* **too few games to tell.** If anything, the Swiss data leans against the "accel junglers fade" pattern, mostly because of Qiyana.
+
+**K'Sante case study**
+- *Hypothesis:* K'Sante, labeled a brake top, holds up against accel top laners.
+- *Evidence:* K'Sante went 6-8 in 14 Swiss games, against 6.7 wins expected from team strength (-5.0 points, CI -28.3 to +17.2). Nine of the 14 games were into accel tops (Jayce 4, Olaf 3, Ambessa 1, Renekton 1), where he went 4-5. Nine different teams picked him, LYON most often (4 games, 2-2).
+- *Verdict:* **too few games to tell.** His results were close to what the teams' ratings predicted.
+
+![Team tempo profiles](outputs/tempo_team_profiles.png)
+
+**Team profiles.** All eight knockout teams leaned fast in the Swiss stage. Their comp averages range from +1.0 (Top Esports) to +0.5 (Invictus Gaming). Dplus KIA played an accel mid in every game (+2.0), and Karmine Corp nearly always (+1.9). LYON and Bilibili Gaming were the only teams whose junglers averaged slightly slower than brake (about -0.1 to -0.2). This is descriptive only, from 4 to 11 games per team.
+
+**Overall.** In the 51 Swiss games, none of these patterns is strong enough to separate from chance once team strength is accounted for. The one place the data leans in a direction (accel junglers gaining gold late, mostly Qiyana) leans against the theory's prediction, not toward it. A full season of games on one patch would be needed to say more.
+
 ## Quickstart
 
 Requires Python 3.13.
@@ -98,6 +142,7 @@ python -m worlds model            # Elo tuning, Worlds 2025 backtest, saves the 
 python -m worlds swiss            # Swiss stage simulation
 python -m worlds knockout         # knockout simulation chained from the Swiss runs
 python -m worlds knockout --fixed # knockout simulation from a known bracket
+python -m worlds tempo            # acceleration-theory analysis of the Swiss stage
 ```
 
 Or run `python -m worlds all`. Run the tests with `python -m pytest -q`.

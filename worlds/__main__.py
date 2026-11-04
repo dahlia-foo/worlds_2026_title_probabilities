@@ -3,10 +3,10 @@ import argparse
 import importlib
 import logging
 
-# `all` runs the pipeline steps in order; `history` only draws a chart from saved snapshots.
+# `all` runs the pipeline steps in order; `history` and `tempo` are standalone analyses.
 PIPELINE = {"data": "worlds.load", "champs": "worlds.champions",
             "model": "worlds.model", "swiss": "worlds.swiss", "knockout": "worlds.knockout"}
-COMMANDS = PIPELINE | {"history": "worlds.history"}
+COMMANDS = PIPELINE | {"history": "worlds.history", "tempo": "worlds.tempo"}
 
 
 def main() -> None:

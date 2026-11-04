@@ -15,7 +15,8 @@ log = logging.getLogger(__name__)
 GAME_COLS = ["gameid", "datacompleteness", "league", "split", "playoffs", "date", "game",
              "patch", "gamelength"]
 ROW_COLS = ["position", "side", "teamname", "teamid", "result", "kills", "deaths",
-            "golddiffat15", "xpdiffat15", "csdiffat15"]
+            "golddiffat10", "golddiffat15", "golddiffat20", "golddiffat25",
+            "xpdiffat15", "csdiffat15"]
 TEAM_COLS = ["firstdragon", "firstbaron", "firsttower", "dragons", "barons", "towers",
              "totalgold"] + [f"ban{i}" for i in range(1, 6)] + [f"pick{i}" for i in range(1, 6)]
 PLAYER_COLS = ["playername", "playerid", "champion", "assists", "cspm", "dpm", "damageshare",
@@ -145,13 +146,15 @@ def clean(raw: pd.DataFrame, worlds_start: dict) -> dict[str, pd.DataFrame]:
     tg[champs.columns] = tg[champs.columns].fillna(champs.reindex(tg.index))
     team_games = tg.reset_index()
     team_games = team_games[["gameid", "tid", "teamname", "side", "result", "kills", "deaths",
-                             "golddiffat15", "xpdiffat15", "csdiffat15"] + TEAM_COLS]
+                             "golddiffat10", "golddiffat15", "golddiffat20", "golddiffat25",
+                             "xpdiffat15", "csdiffat15"] + TEAM_COLS]
     team_games = team_games.rename(columns={"tid": "teamid"})
 
     player_games = player_rows.rename(columns={"teamkey": "tid"})[
         ["gameid", "tid", "side", "playername", "playerid", "position", "champion", "result",
          "kills", "deaths", "assists", "cspm", "dpm", "damageshare", "earnedgoldshare", "vspm",
-         "golddiffat15", "xpdiffat15", "csdiffat15"]].rename(columns={"tid": "teamid"})
+         "golddiffat10", "golddiffat15", "golddiffat20", "golddiffat25",
+         "xpdiffat15", "csdiffat15"]].rename(columns={"tid": "teamid"})
 
     return {"games": games, "series": series, "team_games": team_games,
             "player_games": player_games, "teams": teams}
