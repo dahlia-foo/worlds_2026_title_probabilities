@@ -2,6 +2,8 @@
 
 Forecasts the League of Legends World Championship 2026 from pro match data, using a region-adjusted Elo model and a Monte Carlo simulation of the Swiss and knockout stages.
 
+> **Project status:** completed before the knockout stage (Nov 2026). The forecast includes all 33 Swiss results and the real quarterfinal draw. No knockout results have been entered, and team ratings use games through Oct 18, 2026.
+
 ![Worlds 2026 title odds](outputs/title_odds.png)
 
 ## Current prediction
@@ -34,7 +36,7 @@ A snapshot is saved after every round, each in its own folder under [`outputs/sn
 Oracle's Elixir CSVs -> SQLite -> features -> model -> Swiss sim -> knockout sim
 ```
 
-1. **CSV:** two seasons (2025 and 2026) of per-game data from Oracle's Elixir: 19,797 games and 647 teams.
+1. **CSV:** two seasons (2025 and 2026) of per-game data from Oracle's Elixir: 19,905 games from 647 teams, through Nov 4, 2026. The model was trained on the 19,797 games through Oct 18.
 2. **SQLite:** the raw rows are cleaned into games, series, team and player tables. Series are rebuilt from game order, Worlds qualifiers are separated from the main event, and cross-region games are flagged.
 3. **Features:** a single pass through the games in date order records each team's state *before* each game: region-adjusted Elo, recent form, form against expectations, gold difference at 15 minutes and champion pool depth.
 4. **Model:** a logistic regression on the difference between the two teams' features predicts single-game win probability, and series probabilities are derived from it.
@@ -47,11 +49,11 @@ Each stage has a short write-up with the decisions made and the checks run, in [
 
 ![Champion presence](outputs/presence_top.png)
 
-Nocturne is the most contested champion on patches 16.17, 16.18 and 16.20 at 80% presence, and 70% of that is bans.
+Nocturne is the most contested champion on patches 16.17, 16.18 and 16.20 at 80% presence: banned in 70% of games and picked in 11%. This chart uses games through Oct 18, before the Swiss stage.
 
 ![Fearless game number](outputs/fearless_game_number.png)
 
-Under Fearless draft no champion repeats within a series, so the game number a champion gets picked in shows its priority. Jarvan IV and Ryze are each picked in 40% of game 1s, while Aphelios, Jinx and Thresh tend to be held for later games.
+Under Fearless draft no champion repeats within a series, so the game number a champion gets picked in shows its priority. Jarvan IV and Ryze are each picked in about 40% of game 1s, while Aphelios, Jinx and Thresh tend to be held for later games.
 
 Team-level pool depth and signature champions are in [`outputs/team_pool_depth.png`](outputs/team_pool_depth.png) and [`outputs/signature_champs.png`](outputs/signature_champs.png).
 
@@ -232,3 +234,11 @@ python -m worlds history
 ## Data credit
 
 Match data from [Oracle's Elixir](https://oracleselixir.com) by Tim Sevenhuysen. League of Legends and the World Championship are trademarks of Riot Games, Inc. This project is not endorsed by or affiliated with Riot Games.
+
+## Future work
+
+- **LLM explainer:** a short plain-language summary for each snapshot, explaining why the odds moved (which results, which teams' paths changed), generated from the files in `outputs/`.
+- **More patches and seasons:** rerun the tempo analysis over full domestic seasons and several patches, and backtest the model on more Worlds events than 2025.
+- **Draft-order modeling:** use pick and ban order, and how Fearless draft depletes each team's pool across a series, instead of treating games in a series as independent.
+- **Live ratings during the event:** update Elo with each Worlds game as it's played, instead of freezing ratings at the start.
+- **Calibration for heavy favorites:** correct the overconfidence seen above 80% in the backtest before it feeds into title odds.
