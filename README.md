@@ -105,6 +105,26 @@ Korean analyst Baram's acceleration theory (가속도 이론) sorts champions by
   - **Head-to-head:** Lee Sin vs Qiyana happened 5 times, with Lee Sin winning 2 and trailing by 1,463 gold at 25 minutes on average. Every other pairing had 3 games or fewer.
 - *Verdict:* **too few games to tell.** If anything, the Swiss data leans against the "accel junglers fade" pattern, mostly because of Qiyana.
 
+**H6b. Does gold convert to wins in accel vs spike jungle games?**
+- *Hypothesis:* gold leads turn into wins less reliably for teams with an accel jungler, because spike junglers' mid-game impact doesn't show up in gold.
+- *Evidence:*
+  - **Mixed jungle games.** In the 23 games with an accel/flex jungler on one side and a spike/hyperscale jungler on the other, the accel side was ahead in team gold on average: +388 at 15 minutes, +380 at 20 and +540 at 25 (all intervals include zero). It still won only 10 of 23 (43.5%, CI 25.6% to 63.2%), 4.1 points below Elo expectation (CI -22.8 to +15.3).
+  - **Converting a 1k+ lead:**
+
+    | Team leading by 1,000+ team gold | Won | Win rate (95% CI) |
+    |---|---|---|
+    | at 15 min, accel/flex jungler | 9 of 16 | 56% (33% to 77%) |
+    | at 15 min, spike/hyperscale jungler | 12 of 14 | 86% (60% to 96%) |
+    | at 20 min, accel/flex jungler | 14 of 23 | 61% (41% to 78%) |
+    | at 20 min, spike/hyperscale jungler | 15 of 20 | 75% (53% to 89%) |
+
+  - **Gap after controlling for team strength.** Accel-jungle teams converted 15-minute leads 29.0 points less often than spike-jungle teams (CI -56.7 to -1.0). At 20 minutes the gap was 22.8 points (CI -50.3 to +5.4).
+  - **Comebacks.** Spike-jungle teams behind by 1,000+ didn't come back more often than accel-jungle teams. At 15 minutes they won 5 of 20 (25%) against 3 of 11 (27%); at 20 minutes, 6 of 20 (30%) against 7 of 22 (32%).
+- *Verdict:*
+  - **Consistent with** the hypothesis for lead conversion at 15 minutes, but only just. The interval ends 1 point below zero, and this is one of four conversion and comeback checks, so chance alone could produce one result like it.
+  - **Too few games to tell** for lead conversion at 20 minutes, for both comeback checks and for the accel side's overall record.
+- Gold measures resources, not mid-game impact: crowd control and global ultimates like Nocturne's or Pantheon's can decide fights without showing up in the gold lead.
+
 **K'Sante case study**
 - *Hypothesis:* K'Sante, labeled a brake top, holds up against accel top laners.
 - *Evidence:* K'Sante went 6-8 in 14 Swiss games, against 6.7 wins expected from team strength (-5.0 points, CI -28.3 to +17.2). Nine of the 14 games were into accel tops (Jayce 4, Olaf 3, Ambessa 1, Renekton 1), where he went 4-5. Nine different teams picked him, LYON most often (4 games, 2-2).
@@ -114,7 +134,7 @@ Korean analyst Baram's acceleration theory (가속도 이론) sorts champions by
 
 **Team profiles.** All eight knockout teams leaned fast in the Swiss stage. Their comp averages range from +1.0 (Top Esports) to +0.5 (Invictus Gaming). Dplus KIA played an accel mid in every game (+2.0), and Karmine Corp nearly always (+1.9). LYON and Bilibili Gaming were the only teams whose junglers averaged slightly slower than brake (about -0.1 to -0.2). This is descriptive only, from 4 to 11 games per team.
 
-**Overall.** In the 51 Swiss games, none of these patterns is strong enough to separate from chance once team strength is accounted for. The one place the data leans in a direction (accel junglers gaining gold late, mostly Qiyana) leans against the theory's prediction, not toward it. A full season of games on one patch would be needed to say more.
+**Overall.** In the 51 Swiss games, almost none of these patterns can be told apart from chance once team strength is accounted for. The exception is borderline: accel-jungle teams turned 15-minute gold leads into wins less often than spike-jungle teams (H6b), as the theory suggests, but the result barely clears the bar and is one of many checks run. Elsewhere, the data leans against the theory: accel junglers gained gold late instead of fading (H6), mostly because of Qiyana. A full season of games on one patch would be needed to say more.
 
 ## Quickstart
 

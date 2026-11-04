@@ -61,3 +61,30 @@ def test_verdict_rule():
     assert verdict(-0.5, -0.1, 1) == "not consistent with"
     assert verdict(-0.1, 0.5, 1) == "too few games to tell"
     assert verdict(-0.5, -0.1, -1) == "consistent with"
+
+
+def test_h6b_counts_and_classification():
+    from worlds.tempo import h6b, jungle_type
+    assert [jungle_type(x) for x in (2, 1, 0, -1, -2, np.nan)] == \
+        ["accel", "accel", "other", "spike", "spike", "other"]
+    # g1, g2: accel vs spike jungle; g3: brake vs spike (not a mixed game)
+    t = pd.DataFrame({
+        "gameid": ["g1", "g1", "g2", "g2", "g3", "g3"],
+        "teamid": ["A", "B", "A", "B", "C", "D"],
+        "lab_jng": [2, -1, 1, -2, 0, -1],
+        "win": [0, 1, 1, 0, 1, 0],
+        "p": [0.5] * 6,
+        "golddiffat15": [1500, -1500, 1200, -1200, 2000, -2000],
+        "golddiffat20": [500, -500, 1100, -1100, np.nan, np.nan],
+        "golddiffat25": [np.nan] * 6,
+    })
+    rows = pd.DataFrame(h6b(t, np.random.default_rng(0), lead=1000)).set_index(["group", "metric"])
+    side = "accel/flex jungle side vs spike/hyperscale"
+    assert rows.loc[(side, "win rate"), "n"] == 2
+    assert rows.loc[(side, "win rate"), "estimate"] == pytest.approx(0.5)
+    assert rows.loc[(side, "team gold diff @15"), "estimate"] == pytest.approx(1350)
+    # accel teams led by >=1k at 15 twice and converted once; every spike team trailed
+    assert rows.loc[("accel jungle, leading >=1k @15", "win rate"), "n"] == 2
+    assert rows.loc[("accel jungle, leading >=1k @15", "win rate"), "estimate"] == 0.5
+    assert rows.loc[("spike jungle, trailing >=1k @15", "win rate"), "n"] == 3
+    assert rows.loc[("other jungle, leading >=1k @15", "win rate"), "n"] == 1

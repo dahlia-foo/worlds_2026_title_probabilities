@@ -274,6 +274,101 @@ def ksante(comps_with_results: pd.DataFrame, names: dict, rng) -> tuple[list[dic
     return rows, table
 
 
+def jungle_type(label) -> str:
+    if label is None or np.isnan(label):
+        return "other"
+    return "accel" if label >= 1 else "spike" if label <= -1 else "other"
+
+
+def _boot_games(df: pd.DataFrame, stat, rng, n_boot: int = N_BOOT_H6):
+    """Percentile CI of stat(df, row_weights), resampling whole games."""
+    codes, uniq = pd.factorize(df.gameid)
+    vals = []
+    for _ in range(n_boot):
+        counts = np.bincount(rng.integers(0, len(uniq), len(uniq)), minlength=len(uniq))
+        v = stat(df, counts[codes])
+        if not np.isnan(v):
+            vals.append(v)
+    return tuple(np.percentile(vals, [2.5, 97.5])) if vals else (np.nan, np.nan)
+
+
+def _wrate(df, w, mask):
+    d = (w * mask).sum()
+    return (w * mask * df.win.values).sum() / d if d else np.nan
+
+
+def h6b(teams: pd.DataFrame, rng, lead: float = 1000) -> list[dict]:
+    """Does gold convert to wins in accel vs spike jungle games?
+
+    teams: one row per (game, team) with gameid, lab_jng, win, p (Elo win chance) and team
+    golddiffat15/20/25. Reading tested: spike junglers' mid-game impact (CC, global ults) isn't
+    measured by gold, so accel-jungle sides should convert gold less reliably.
+    """
+    t = teams.assign(jtype=[jungle_type(x) for x in teams.lab_jng],
+                     resid=teams.win - teams.p)
+    rows = []
+
+    # 1. mixed jungle games, seen from the accel/flex side
+    kinds = t.groupby("gameid").jtype.agg(lambda s: frozenset(s))
+    mixed = kinds[kinds == frozenset({"accel", "spike"})].index
+    a = t[t.gameid.isin(mixed) & (t.jtype == "accel")]
+    k, n = int(a.win.sum()), len(a)
+    wl, wh = wilson(k, n)
+    lo, hi = _boot_games(a, lambda d, w: (w * d.resid.values).sum() / w.sum(), rng)
+    rows += [
+        {"analysis": "H6b", "group": "accel/flex jungle side vs spike/hyperscale",
+         "metric": "win rate", "n": n, "estimate": k / n if n else np.nan, "ci_lo": wl,
+         "ci_hi": wh, "verdict": ""},
+        {"analysis": "H6b", "group": "accel/flex jungle side vs spike/hyperscale",
+         "metric": "wins above Elo", "n": n, "estimate": a.resid.mean(), "ci_lo": lo,
+         "ci_hi": hi, "verdict": verdict(lo, hi, -1)},
+    ]
+    for m in (15, 20, 25):
+        g = a[a[f"golddiffat{m}"].notna()]
+        col = f"golddiffat{m}"
+        lo, hi = _boot_games(g, lambda d, w, c=col: (w * d[c].values).sum() / w.sum(), rng) \
+            if len(g) else (np.nan, np.nan)
+        rows.append({"analysis": "H6b", "group": "accel/flex jungle side vs spike/hyperscale",
+                     "metric": f"team gold diff @{m}", "n": len(g), "estimate": g[col].mean(),
+                     "ci_lo": lo, "ci_hi": hi, "verdict": ""})
+
+    # 2. conversion of >= lead gold at 15 / 20, split by the team's jungler type
+    for m in (15, 20):
+        col = f"golddiffat{m}"
+        ahead, behind = t[col] >= lead, t[col] <= -lead
+        for jt in ("accel", "spike", "other"):
+            for label, sel in (("leading", ahead), ("trailing", behind)):
+                s = t[sel & (t.jtype == jt)]
+                k, n = int(s.win.sum()), len(s)
+                wl, wh = wilson(k, n)
+                rows.append({"analysis": "H6b", "group": f"{jt} jungle, {label} >=1k @{m}",
+                             "metric": "win rate", "n": n,
+                             "estimate": k / n if n else np.nan, "ci_lo": wl, "ci_hi": wh,
+                             "verdict": "" if n else "too few games to tell"})
+        # differences, resampling games: accel leaders convert less; spike trailers come back more
+        for label, sel, first, second, direction in (
+                ("lead conversion, accel minus spike", ahead, "accel", "spike", -1),
+                ("comeback rate, spike minus accel", behind, "spike", "accel", 1)):
+            s = t[sel & t.jtype.isin([first, second])]
+            if s.empty:
+                continue
+            m1 = (s.jtype == first).values
+            # raw win rates, then wins above Elo (leaders may simply be stronger teams);
+            # the verdict uses the Elo-adjusted version, as in H6
+            for kind, outcome in (("raw", "win"), ("Elo-adjusted", "resid")):
+                d0 = s.assign(win=s[outcome])
+                est = d0[m1].win.mean() - d0[~m1].win.mean()
+                lo, hi = _boot_games(
+                    d0, lambda d, w, m1=m1: _wrate(d, w, m1) - _wrate(d, w, ~m1), rng)
+                rows.append({"analysis": "H6b", "group": f"{label} @{m}",
+                             "metric": "win rate diff" if kind == "raw"
+                             else "wins-above-Elo diff",
+                             "n": f"{m1.sum()} vs {(~m1).sum()}", "estimate": est,
+                             "ci_lo": lo, "ci_hi": hi,
+                             "verdict": verdict(lo, hi, direction) if kind != "raw" else ""})
+    return rows
+
+
 # ---------- charts ----------
 
 DIVERGING = LinearSegmentedColormap.from_list(
@@ -396,6 +491,9 @@ def run() -> None:
     names = dict(zip(teams.teamid, teams.name))
     k_rows, k_table = ksante(comps_r, names, rng)
     res += k_rows
+    team_gold = db.read(f"SELECT gameid, teamid, golddiffat15, golddiffat20, golddiffat25 "
+                        f"FROM team_games WHERE gameid IN ({q})", ids, parse_dates=())
+    res += h6b(comps_r.merge(team_gold, on=["gameid", "teamid"]), rng)
     res = pd.DataFrame(res)
 
     ko = [t for pair in cfg["knockout"]["bracket"] for t in pair]

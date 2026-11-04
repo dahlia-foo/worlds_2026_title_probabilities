@@ -22,3 +22,28 @@ H6 head-to-head,Nocturne vs Vi,Nocturne wins / gold@15 / gold@25,2,1.0000,32.500
 H6 head-to-head,Qiyana vs Vi,Qiyana wins / gold@15 / gold@25,2,0.0000,-135.5000,-500.5000,too few games to tell
 K'Sante,K'Sante (top),win rate,14,0.4286,0.2138,0.6741,
 K'Sante,K'Sante (top),wins above Elo,14,-0.0496,-0.2832,0.1717,
+H6b,accel/flex jungle side vs spike/hyperscale,win rate,23,0.4348,0.2563,0.6319,
+H6b,accel/flex jungle side vs spike/hyperscale,wins above Elo,23,-0.0415,-0.2284,0.1532,too few games to tell
+H6b,accel/flex jungle side vs spike/hyperscale,team gold diff @15,23,388.3043,-453.2837,1242.4446,
+H6b,accel/flex jungle side vs spike/hyperscale,team gold diff @20,23,380.4783,-1469.7913,2153.5054,
+H6b,accel/flex jungle side vs spike/hyperscale,team gold diff @25,22,539.5909,-2081.0102,3239.0511,
+H6b,"accel jungle, leading >=1k @15",win rate,16,0.5625,0.3318,0.7690,
+H6b,"accel jungle, trailing >=1k @15",win rate,11,0.2727,0.0975,0.5657,
+H6b,"spike jungle, leading >=1k @15",win rate,14,0.8571,0.6006,0.9599,
+H6b,"spike jungle, trailing >=1k @15",win rate,20,0.2500,0.1119,0.4687,
+H6b,"other jungle, leading >=1k @15",win rate,3,1.0000,0.4385,1.0000,
+H6b,"other jungle, trailing >=1k @15",win rate,2,0.5000,0.0945,0.9055,
+H6b,"lead conversion, accel minus spike @15",win rate diff,16 vs 14,-0.2946,-0.5933,0.0179,
+H6b,"lead conversion, accel minus spike @15",wins-above-Elo diff,16 vs 14,-0.2902,-0.5668,-0.0097,consistent with
+H6b,"comeback rate, spike minus accel @15",win rate diff,20 vs 11,-0.0227,-0.3631,0.3070,
+H6b,"comeback rate, spike minus accel @15",wins-above-Elo diff,20 vs 11,-0.1546,-0.4788,0.1475,too few games to tell
+H6b,"accel jungle, leading >=1k @20",win rate,23,0.6087,0.4079,0.7784,
+H6b,"accel jungle, trailing >=1k @20",win rate,22,0.3182,0.1636,0.5268,
+H6b,"spike jungle, leading >=1k @20",win rate,20,0.7500,0.5313,0.8881,
+H6b,"spike jungle, trailing >=1k @20",win rate,20,0.3000,0.1455,0.5190,
+H6b,"other jungle, leading >=1k @20",win rate,2,1.0000,0.3424,1.0000,
+H6b,"other jungle, trailing >=1k @20",win rate,3,0.3333,0.0615,0.7923,
+H6b,"lead conversion, accel minus spike @20",win rate diff,23 vs 20,-0.1413,-0.4123,0.1400,
+H6b,"lead conversion, accel minus spike @20",wins-above-Elo diff,23 vs 20,-0.2284,-0.5032,0.0544,too few games to tell
+H6b,"comeback rate, spike minus accel @20",win rate diff,20 vs 22,-0.0182,-0.3021,0.2639,
+H6b,"comeback rate, spike minus accel @20",wins-above-Elo diff,20 vs 22,-0.0988,-0.3938,0.1968,too few games to tell

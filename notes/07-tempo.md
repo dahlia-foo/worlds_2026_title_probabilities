@@ -29,11 +29,27 @@ Every result carries a sample size and a 95% bootstrap confidence interval. The 
 | H3: scaling jungle + accel bot + brake top (B) | 2-3 in 5 comps; -7.8 points (CI -52.5 to +36.9) | too few games to tell |
 | H6: accel junglers ahead at 10 min | +25 gold vs spike junglers (CI -230 to +277), 32 vs 39 games | too few games to tell |
 | H6: accel junglers fade by 25 min | gained 687 gold *more* than spike junglers from 10 to 25 (CI -30 to +1,390) | too few games to tell |
+| H6b: accel side in accel-vs-spike jungle games | 10-13; -4.1 points vs Elo (CI -22.8 to +15.3) | too few games to tell |
+| H6b: accel-jungle teams convert 15-min 1k+ leads less often | 9 of 16 vs 12 of 14; -29.0 points vs Elo (CI -56.7 to -1.0) | consistent with (borderline) |
+| H6b: same at 20 min | 14 of 23 vs 15 of 20; -22.8 points (CI -50.3 to +5.4) | too few games to tell |
+| H6b: spike-jungle teams come back more often | 5 of 20 vs 3 of 11 at 15 min; 6 of 20 vs 7 of 22 at 20 min | too few games to tell |
 | K'Sante | 6-8 vs 6.7 expected wins; 4-5 into accel tops | too few games to tell |
 
 **The jungle curves are the most interesting result.** Qiyana went from +287 gold at 10 minutes to +1,187 at 25 (13 games). Lee Sin went from -106 to +213 (19 games). Vi and Nocturne slipped slightly behind their opponents. So the accel junglers didn't fade; Qiyana's lead kept growing. The interval still includes zero, though, so this leans against the theory without being clear evidence.
 
 **Team profiles.** All eight knockout teams leaned fast, with comp averages from +0.5 (Invictus Gaming) to +1.0 (Top Esports). Dplus KIA played an accel mid in all four of its Swiss games.
+
+## H6b: does gold turn into wins?
+
+We added a follow-up to H6, prompted by the thought that **gold measures resources, not mid-game impact**. A spike jungler's crowd control or global ultimate (Nocturne, Pantheon) can decide a fight without showing up in the gold graph. If that's true, accel-jungle teams should turn gold leads into wins less reliably than spike-jungle teams.
+
+- **Accel-vs-spike jungle games.** In the 23 games with an accel/flex jungler against a spike/hyperscale jungler, the accel side was ahead in team gold on average (+388 at 15 minutes) but won only 10 of them. That's slightly below what team strength predicts, though not clearly.
+- **Converting leads at 15 minutes.** Teams with an accel jungler and a lead of 1,000+ gold won 9 of 16. Teams with a spike jungler and the same lead won 12 of 14. With team strength accounted for, the gap is 29 points, with an interval of -56.7 to -1.0. That's the one "consistent with" result in the whole step.
+- **Why it's weak support.**
+  - The interval clears zero by about one point. It held across several random seeds, but only just.
+  - It's one of four conversion and comeback checks in H6b, and of many more in the step, so a single hit at this level is about what chance produces.
+  - The same comparison at 20 minutes, and both comeback comparisons, came out "too few games to tell".
+- **The Elo control isn't what moves the estimate.** Accel and spike teams that led at 15 minutes had nearly identical strength (52.9% vs 53.3% expected win chance), so controlling for Elo barely changes it (from -29.5 to -29.0 points). The interval does get narrower, because Elo explains some of the game-to-game variation; the raw interval just includes zero.
 
 ## Two decisions made along the way
 
@@ -50,4 +66,7 @@ Every result carries a sample size and a 95% bootstrap confidence interval. The 
   - the Swiss window excludes a game at exactly 2026-11-02 00:00 UTC;
   - each verdict rule gives the right answer.
 - The games per team match each team's actual Swiss path. Gen.G went 3-0 with one Bo3, so 5 games. LYON went 3-2 with three Bo3s, so 11 games.
-- The full test suite (38 tests) passes, and the analysis takes about 5 seconds.
+- H6b's counts add up: at 15 minutes, 33 team-games had a 1,000+ lead and 33 had a 1,000+ deficit, since every lead is the other team's deficit (45 and 45 at 20 minutes).
+- A unit test checks H6b's jungler classification, the mixed-game selection, the gold averages and the lead and deficit counts on a small made-up dataset.
+- Adding H6b at the end of the run left every earlier result in `tempo_results.csv` exactly the same.
+- The full test suite (39 tests) passes, and the analysis takes about 7 seconds.
